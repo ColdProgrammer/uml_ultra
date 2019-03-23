@@ -2,10 +2,10 @@
 ////////////////////////////////////////////////////////////////////////////////////
 
 
-/// This file and the source code provided can be used only for   
+/// This file and the source code provided can be used only for
 /// the projects and assignments of this course
 
-/// Last Edit by Dr. Atef Bader: 1/30/2019
+/// Last Edit by Srajan: 03/23/2019
 
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -44,8 +44,7 @@ export class PlacesService {
 
   uri = 'http://localhost:4000';
 
-  constructor(private http: HttpClient) { 
- 
+  constructor(private http: HttpClient) {
 
   }
 
@@ -77,8 +76,6 @@ export class PlacesService {
 
   }
 
- 
-
 
   findStations(placeName) {
     const find_stations_at = {
@@ -91,8 +88,15 @@ export class PlacesService {
     return this.http.post(`${this.uri}/stations/find`, find_stations_at, httpOptions);
 
   }
+// The below function for hour old divvy status
+  plotLineHour(placeName) {
+    const find_stations_at = {
+      placeName: placeName
+    };
 
+    return this.http.post(`${this.uri}/stations/hourold`, find_stations_at, httpOptions);
 
+  }
  
 
 

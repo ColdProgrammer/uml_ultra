@@ -75,7 +75,7 @@ var find_places_task_completed = false;
 
 
 const app = express();
-const router = express.Router();
+const router = express.Router(); //This is where we declare routes for express
 
 
 app.use(bodyParser.urlencoded({
@@ -176,6 +176,7 @@ router.route('/stations/find').post((req, res) => {
     const query = {
         // give the query a unique name
         name: 'fetch-divvy',
+        // This query fetches 3 divvy station nearby to the location we provide
         text: ' SELECT * FROM divvy_stations_status ORDER BY (divvy_stations_status.where_is <-> ST_POINT($1,$2)) LIMIT 3',
         values: [place_selected.latitude, place_selected.longitude]
     }
@@ -188,7 +189,36 @@ router.route('/stations/find').post((req, res) => {
 
 });
 
+// Added to get  1 hour old divvy data
+router.route('/stations/hourold').post((req, res) => {
 
+    var str = JSON.stringify(req.body, null, 4);
+
+    for (var i = 0,len = places_found.length; i < len; i++) {
+
+        if ( places_found[i].name === req.body.placeName ) { // strict equality test
+
+            place_selected = places_found[i];
+
+            break;
+        }
+    }
+ 
+    const query_hour = {
+        // give the query a unique name
+        name: 'fetch-hourold-divvy',
+        // This query fetches an hour long data of the divvy bikes
+        text: ' select * from divvy_stations_logs d where d.lastcommunicationtime > now() - interval $1 and d.latitude = $2 and d.longitude = $3 order by (d.lastcommunicationtime)',
+        values: ['1 hour', place_selected.latitude, place_selected.longitude]
+    }
+
+    find_stations_from_divvy(query).then(function (response) {
+        var hits = response;
+        res.json({'stations_found': 'Added successfully'});
+    });
+ 
+
+});
 
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -205,11 +235,10 @@ async function find_stations_from_divvy(query) {
     const response = await pgClient.query(query);
 
     stations_found = [];
-
+// i<3 because we limited the no of divvy stations to 3
     for (i = 0; i < 3; i++) {
                 
          plainTextDateTime =  moment(response.rows[i].lastcommunicationtime).format('YYYY-MM-DD, h:mm:ss a');
-    
 
         var station = {
                     "id": response.rows[i].id,

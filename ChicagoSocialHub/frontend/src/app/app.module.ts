@@ -35,6 +35,7 @@ import { ListOfPlacesComponent } from './components/list-of-places/list-of-place
 import { ListOfStationsComponent } from './components/list-of-stations/list-of-stations.component';
 import { BarChartYelpComponent } from './components/bar-chart-yelp/bar-chart-yelp.component';
 import { StackBarChartDivvyComponent } from './components/stack-bar-chart-divvy/stack-bar-chart-divvy.component';
+import { LineChartDivvyComponent } from './components/line-chart-divvy/line-chart-divvy.component';
 
 
 
@@ -45,6 +46,7 @@ const routes: Routes = [
   { path: 'list_of_stations', component: ListOfStationsComponent},
   { path: 'bar-chart-yelp', component: BarChartYelpComponent},
   { path: 'stack-chart-divvy', component: StackBarChartDivvyComponent},
+  { path: 'line-chart-divvy', component: LineChartDivvyComponent},
 
   { path: '', redirectTo: 'find', pathMatch: 'full'}
 ];
@@ -57,6 +59,7 @@ const routes: Routes = [
     ListOfStationsComponent,
     BarChartYelpComponent,
     StackBarChartDivvyComponent,
+    LineChartDivvyComponent,
   ],
   imports: [
     BrowserModule,

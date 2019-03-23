@@ -2,7 +2,7 @@
 ////////////////////////////////////////////////////////////////////////////////////
 
 
-/// This file and the source code provided can be used only for   
+/// This file and the source code provided can be used only for
 /// the projects and assignments of this course
 
 /// Last Edit by Dr. Atef Bader: 1/30/2019
@@ -55,7 +55,8 @@ export class ListOfStationsComponent implements OnInit {
   markers: Station[];
   placeSelected: Place;
 
-  displayedColumns = ['id', 'stationName', 'availableBikes', 'availableDocks', 'is_renting', 'lastCommunicationTime', 'latitude',  'longitude', 'status', 'totalDocks'];
+  displayedColumns = ['id', 'stationName', 'availableBikes', 'availableDocks', 'is_renting', 'lastCommunicationTime', 'latitude',
+  'longitude', 'status', 'totalDocks', 'LineChart'];
 
 
   icon = {
