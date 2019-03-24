@@ -2,7 +2,7 @@
 ////////////////////////////////////////////////////////////////////////////////////
 
 
-/// This file and the source code provided can be used only for   
+/// This file and the source code provided can be used only for
 /// the projects and assignments of this course
 
 /// Last Edit by Dr. Atef Bader: 1/30/2019
@@ -50,7 +50,7 @@ export class ListOfPlacesComponent implements OnInit {
 
   places: Place[] = [];
 
-  displayedColumns = ['name', 'display_phone', 'address1', 'is_closed', 'rating','review_count', 'Divvy'];
+  displayedColumns = ['name', 'display_phone', 'address1', 'is_closed', 'rating', 'review_count', 'Divvy'];
 
   constructor(private placesService: PlacesService, private router: Router, private http: HttpClient) { }
 
@@ -74,21 +74,19 @@ export class ListOfPlacesComponent implements OnInit {
 
 
 
-  
+
   findStations(placeName) {
 
-    for (var i = 0,len = this.places.length; i < len; i++) {
-
+    let place_selected = null;
+    for (let i = 0, len = this.places.length; i < len; i++) {
       if ( this.places[i].name === placeName ) { // strict equality test
-
-          var place_selected =  this.places[i];
-
+          place_selected =  this.places[i];
           break;
       }
     }
 
 
-    this.placesService.findStations(placeName).subscribe(() => {
+    this.placesService.findStations(place_selected).subscribe(() => {
       this.router.navigate(['/list_of_stations']);
     });
 

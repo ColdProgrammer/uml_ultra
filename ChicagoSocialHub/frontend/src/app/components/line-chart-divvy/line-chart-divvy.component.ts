@@ -34,6 +34,7 @@ export class LineChartDivvyComponent implements OnInit {
     this.fetchStations();
   }
 
+
   fetchStations() {
     this.placesService
       .getStations()

@@ -168,7 +168,6 @@ router.route('/stations/find').post((req, res) => {
         if ( places_found[i].name === req.body.placeName ) { // strict equality test
 
             place_selected = places_found[i];
-
             break;
         }
     }
