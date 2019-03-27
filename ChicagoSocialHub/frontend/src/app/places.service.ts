@@ -48,23 +48,21 @@ export class PlacesService {
 
   }
 
-
-
-  getPlaces() : Observable<Place[]> {
+  getPlaces(): Observable<Place[]> {
     return this.http.get<Place[]>(`${this.uri}/places`);
   }
- 
 
   getPlaceSelected() {
     return this.http.get(`${this.uri}/place_selected`);
   }
 
-
   getStations() {
     return this.http.get(`${this.uri}/stations`);
   }
 
-
+  getStations_Hour_Old() {
+    return this.http.get(`${this.uri}/stations/hourOldData`);
+  }
 
   findPlaces(find, where) {
     const find_places_at = {
@@ -97,8 +95,5 @@ export class PlacesService {
     return this.http.post(`${this.uri}/stations/hourold`, find_stations_at, httpOptions);
 
   }
- 
 
-
-  
 }

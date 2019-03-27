@@ -8,7 +8,7 @@
             "type": "node",
             "request": "launch",
             "name": "Launch Program",
-            "program": "${workspaceFolder}\\frontend\\src\\app\\places.service.ts",
+            "program": "${workspaceFolder}\\backend\\server.js",
             "outFiles": [
                 "${workspaceFolder}/**/*.js"
             ]

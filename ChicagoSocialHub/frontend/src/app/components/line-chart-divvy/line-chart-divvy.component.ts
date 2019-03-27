@@ -15,6 +15,7 @@ import { PlacesService } from '../../places.service';
   styleUrls: ['./line-chart-divvy.component.css']
 })
 export class LineChartDivvyComponent implements OnInit {
+
   title = 'Line Chart';
   stations: Station[];
   private margin = {top: 20, right: 20, bottom: 30, left: 50};
@@ -37,7 +38,7 @@ export class LineChartDivvyComponent implements OnInit {
 
   fetchStations() {
     this.placesService
-      .getStations()
+      .getStations_Hour_Old()
       .subscribe((data: Station[]) => {
         this.stations = data;
         this.initSvg();
@@ -54,10 +55,10 @@ export class LineChartDivvyComponent implements OnInit {
   }
 
   private initAxis(data: Station[]) {
-      this.x = d3Scale.scaleTime().range([0, this.width]);
+      this.x = d3Scale.scaleBand().rangeRound([0, this.width]).padding(0.1);
       this.y = d3Scale.scaleLinear().range([this.height, 0]);
-      this.x.domain(d3Array.extent(data, (d) => d.availableDocks ));
-      this.y.domain(d3Array.extent(data, (d) => d.totalDocks ));
+      this.x.domain(data.map((d) => d.lastCommunicationTime.substr(12, 10))); // takes data
+      this.y.domain(d3Array.extent(data, (d) => d.availableDocks ));
   }
 
   private drawAxis() {
@@ -76,13 +77,13 @@ export class LineChartDivvyComponent implements OnInit {
           .attr('y', 6)
           .attr('dy', '.71em')
           .style('text-anchor', 'end')
-          .text('Price ($)');
+          .text('Available Docks');
   }
 
   private drawLine(data: Station[]) {
       this.line = d3Shape.line()
-          .x( (d: any) => this.x(d.availableDocks) )
-          .y( (d: any) => this.y(d.totalDocks) );
+          .x( (d: any) => this.x(d.lastCommunicationTime.substr(12, 10)) ) // sets the scale
+          .y( (d: any) => this.y(d.availableDocks) );
 
       this.svg.append('path')
           .datum(data)

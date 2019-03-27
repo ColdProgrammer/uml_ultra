@@ -5,7 +5,7 @@
 /// This file and the source code provided can be used only for
 /// the projects and assignments of this course
 
-/// Last Edit by Dr. Atef Bader: 1/30/2019
+/// Last Edit by Srajan: 03/25/2019
 
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -34,7 +34,7 @@ interface Location {
   lat: number;
   lng: number;
   zoom: number;
-  address_level_1?:string;
+  address_level_1?: string;
   address_level_2?: string;
   address_country?: string;
   address_zip?: string;
@@ -51,6 +51,16 @@ interface Location {
 })
 export class ListOfStationsComponent implements OnInit {
 
+  selected = 'option2'; // Selecting 24 hour value by default (2-way binding)
+  circleRadius = 3000; // km
+
+  public location: Location = {
+    lat: 41.882607,
+    lng: -87.643548,
+    label: 'You are Here',
+    zoom: 13
+  };
+
   stations: Station[];
   markers: Station[];
   placeSelected: Place;
@@ -65,7 +75,7 @@ export class ListOfStationsComponent implements OnInit {
       width: 60,
       height: 60
     }
-  }
+  };
 
 
 
@@ -101,18 +111,27 @@ export class ListOfStationsComponent implements OnInit {
 
 
 clickedMarker(label: string, index: number) {
-  console.log(`clicked the marker: ${label || index}`)
+  console.log(`clicked the marker: ${label || index}`);
 }
 
+plotLineHour(placeName) {
+  // This function is called when one clicks on Line Chart button
+  console.log('placeName');
+  console.log(placeName);
+  console.log(this.stations);
+  let place_selected = null;
+  for (let i = 0, len = this.stations.length; i < len; i++) {
+    if ( this.stations[i].stationName === placeName ) { // strict equality test
+      place_selected =  this.stations[i];
+      break;
+      }
+    }
+  console.log(place_selected);
+  this.placesService.plotLineHour(place_selected).subscribe(() => {
+    this.router.navigate(['/line-chart-divvy']);
+    });
+}
 
-circleRadius:number = 3000; // km
-
-public location:Location = {
-  lat: 41.882607,
-  lng: -87.643548,
-  label: 'You are Here',
-  zoom: 13
-};
 
 
 
