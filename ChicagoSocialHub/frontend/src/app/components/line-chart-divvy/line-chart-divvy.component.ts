@@ -1,4 +1,6 @@
 import { Component, ViewEncapsulation, OnInit } from '@angular/core';
+import { Routes, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import * as d3 from 'd3-selection';
 import * as d3Scale from 'd3-scale';
 import * as d3Shape from 'd3-shape';
@@ -7,6 +9,7 @@ import * as d3Axis from 'd3-axis';
 
 import { Station } from '../../station';
 import { PlacesService } from '../../places.service';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-line-chart-divvy',
@@ -17,7 +20,10 @@ import { PlacesService } from '../../places.service';
 export class LineChartDivvyComponent implements OnInit {
 
   title = 'Line Chart';
+  // private time = this.route.snapshot.paraMap.get('time');
   stations: Station[];
+  private sub;
+  private time;
   private margin = {top: 20, right: 20, bottom: 30, left: 50};
   private width: number;
   private height: number;
@@ -26,21 +32,32 @@ export class LineChartDivvyComponent implements OnInit {
   private svg: any;
   private line: d3Shape.Line<[number, number]>;
 
-  constructor(private placesService: PlacesService) {
+  constructor(private placesService: PlacesService, private router: Router, private route: ActivatedRoute) {
       this.width = 900 - this.margin.left - this.margin.right;
       this.height = 500 - this.margin.top - this.margin.bottom;
   }
 
   ngOnInit() {
+    /*this.sub = this.route
+      .paramMap
+      .subscribe(params => {
+        // Defaults to 0 if no query param provided.
+        this.time = params.get('time');
+        console.log('Query param page: ', this.time);
+      });*/
     this.fetchStations();
   }
 
+  /*ngOnDestroy() {
+    this.sub.unsubscribe();
+  }*/
 
   fetchStations() {
     this.placesService
-      .getStations_Hour_Old()
+      .getStations_Hour_Cont()
       .subscribe((data: Station[]) => {
         this.stations = data;
+        console.log(data);
         this.initSvg();
         this.initAxis(this.stations);
         this.drawAxis();

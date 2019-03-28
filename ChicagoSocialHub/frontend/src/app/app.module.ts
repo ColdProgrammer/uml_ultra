@@ -36,8 +36,8 @@ import { ListOfStationsComponent } from './components/list-of-stations/list-of-s
 import { BarChartYelpComponent } from './components/bar-chart-yelp/bar-chart-yelp.component';
 import { StackBarChartDivvyComponent } from './components/stack-bar-chart-divvy/stack-bar-chart-divvy.component';
 import { LineChartDivvyComponent } from './components/line-chart-divvy/line-chart-divvy.component';
-import { LineChartDayDivvyComponent } from './line-chart-day-divvy/line-chart-day-divvy.component';
-import { LineChartWeekDivvyComponent } from './line-chart-week-divvy/line-chart-week-divvy.component';
+import { LineChartDayDivvyComponent } from './components/line-chart-day-divvy/line-chart-day-divvy.component';
+import { LineChartWeekDivvyComponent } from './components/line-chart-week-divvy/line-chart-week-divvy.component';
 
 
 
@@ -49,6 +49,8 @@ const routes: Routes = [
   { path: 'bar-chart-yelp', component: BarChartYelpComponent},
   { path: 'stack-chart-divvy', component: StackBarChartDivvyComponent},
   { path: 'line-chart-divvy', component: LineChartDivvyComponent},
+  { path: 'line-chart-day-divvy', component: LineChartDayDivvyComponent},
+  { path: 'line-chart-week-divvy', component: LineChartWeekDivvyComponent},
 
   { path: '', redirectTo: 'find', pathMatch: 'full'}
 ];

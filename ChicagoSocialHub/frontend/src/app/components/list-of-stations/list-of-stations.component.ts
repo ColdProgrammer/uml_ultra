@@ -114,7 +114,7 @@ clickedMarker(label: string, index: number) {
   console.log(`clicked the marker: ${label || index}`);
 }
 
-plotLineHour(placeName) {
+plotLineHour(placeName, time) {
   // This function is called when one clicks on Line Chart button
   console.log('placeName');
   console.log(placeName);
@@ -127,8 +127,8 @@ plotLineHour(placeName) {
       }
     }
   console.log(place_selected);
-  this.placesService.plotLineHour(place_selected).subscribe(() => {
-    this.router.navigate(['/line-chart-divvy']);
+  this.placesService.plotLineHour(place_selected, time).subscribe(() => {
+    this.router.navigate(['/line-chart-divvy',  { time: time}]);
     });
 }
 

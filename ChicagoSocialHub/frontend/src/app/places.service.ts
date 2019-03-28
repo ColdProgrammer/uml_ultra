@@ -64,6 +64,9 @@ export class PlacesService {
     return this.http.get(`${this.uri}/stations/hourOldData`);
   }
 
+  getStations_Hour_Cont() {
+    return this.http.get(`${this.uri}/stations/hourContData`);
+  }
   findPlaces(find, where) {
     const find_places_at = {
       find: find,
@@ -87,9 +90,10 @@ export class PlacesService {
 
   }
 // The below function for hour old divvy status
-  plotLineHour(placeName) {
+  plotLineHour(placeName, time) {
     const find_stations_at = {
-      placeName: placeName
+      placeName: placeName,
+      time: time
     };
 
     return this.http.post(`${this.uri}/stations/hourold`, find_stations_at, httpOptions);

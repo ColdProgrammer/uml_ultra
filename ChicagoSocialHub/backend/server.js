@@ -95,7 +95,9 @@ router.all('*', function (req, res, next) {
 var places_found = [];
 var stations_found = [];
 var stations_found_hourold = [];
+var stations_found_hour_cont;
 var place_selected;
+var station_selected;
 
 
 
@@ -147,6 +149,12 @@ router.route('/stations/hourOldData').get((req, res) => {
            
 });
 
+// Get continous hour old data from server
+router.route('/stations/hourContData').get((req, res) => {
+   
+    res.json(stations_found_hour_cont)
+           
+});
 
 router.route('/places/find').post((req, res) => {
 
@@ -202,19 +210,39 @@ router.route('/stations/hourold').post((req, res) => {
 
         if ( stations_found[i].stationName === req.body.placeName.stationName ) { // strict equality test
 
-            place_selected = stations_found[i];
+            station_selected = stations_found[i];
 
             break;
         }
     }
-    // let hour = '1 hour';
-    const query_hour = {
-        // give the query a unique name
-        name: 'fetch-hourold-divvy',
-        // This query fetches an hour long data of the divvy bikes
-        text: ' select * from divvy_stations_logs d where d.lastcommunicationtime > now() - interval \'1 hour\' and d.latitude = $1 and d.longitude = $2 order by (d.lastcommunicationtime)',
-        values: [place_selected.latitude, place_selected.longitude]
-    }
+    // Additional parameter to signify 1 hour/24 hours/7 days
+    let query_hour;
+    if('hour' == req.body.time) {
+        query_hour = {
+            // give the query a unique name
+            name: 'fetch-hourold-divvy',
+            // This query fetches an hour long data of the divvy bikes
+            text: ' select * from divvy_stations_logs d where d.lastcommunicationtime > now() - interval \'1 hour\' and d.latitude = $1 and d.longitude = $2 order by (d.lastcommunicationtime)',
+            values: [station_selected.latitude, station_selected.longitude]
+        }
+    } else if('day' == req.body.time) {
+        query_hour = {
+            // give the query a unique name
+            name: 'fetch-dayold-divvy',
+            // This query fetches an hour long data of the divvy bikes
+            text: ' select * from divvy_stations_logs d where d.lastcommunicationtime > now() - interval \'24 hour\' and d.latitude = $1 and d.longitude = $2 order by (d.lastcommunicationtime)',
+            values: [station_selected.latitude, station_selected.longitude]
+        }
+    } else {
+        query_hour = {
+            // give the query a unique name
+            name: 'fetch-weekold-divvy',
+            // This query fetches an hour long data of the divvy bikes
+            text: ' select * from divvy_stations_logs d where d.lastcommunicationtime > now() - interval \'7 days\' and d.latitude = $1 and d.longitude = $2 order by (d.lastcommunicationtime)',
+            values: [station_selected.latitude, station_selected.longitude]
+        }
+    } 
+
 
     find_stations_from_divvy_hour_old(query_hour).then(function (response) {
         var hits = response;
@@ -224,6 +252,18 @@ router.route('/stations/hourold').post((req, res) => {
 
 });
 
+// Async function to set data for every 3 min
+const intervalObj = setInterval(() => {
+    console.log('interviewing the interval every 3 min');
+    var query_hour = {
+        // give the query a unique name
+        name: 'fetch-hour-cont-divvy',
+        // This query fetches an hour long data of the divvy bikes
+        text: ' select * from divvy_stations_logs d where d.lastcommunicationtime > now() - interval \'1 hour\' and d.latitude = $1 and d.longitude = $2 order by (d.lastcommunicationtime)',
+        values: [station_selected.latitude, station_selected.longitude]
+    }
+    find_stations_from_divvy_hour_continous(query_hour)
+  }, 180000);
 
 /////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////
@@ -290,6 +330,36 @@ async function find_stations_from_divvy_hour_old(query) {
         };
 
         stations_found_hourold.push(station);
+
+    }
+}
+
+// async function for contious updation of data
+
+async function find_stations_from_divvy_hour_continous(query) {
+
+    const response = await pgClient.query(query);
+
+    stations_found_hour_cont = [];
+// i<3 because we limited the no of divvy stations to 3
+    for (i = 0; i < response.rows.length; i++) {
+                
+         plainTextDateTime =  moment(response.rows[i].lastcommunicationtime).format('YYYY-MM-DD, h:mm:ss a');
+
+        var station = {
+                    "id": response.rows[i].id,
+                    "stationName": response.rows[i].stationname,
+                    "availableBikes": response.rows[i].availablebikes,
+                    "availableDocks": response.rows[i].availabledocks,
+                    "is_renting": response.rows[i].is_renting,
+                    "lastCommunicationTime": plainTextDateTime,
+                    "latitude": response.rows[i].latitude,    
+                    "longitude": response.rows[i].longitude,
+                    "status": response.rows[i].status,
+                    "totalDocks": response.rows[i].totaldocks
+        };
+
+        stations_found_hour_cont.push(station);
 
     }
 }
