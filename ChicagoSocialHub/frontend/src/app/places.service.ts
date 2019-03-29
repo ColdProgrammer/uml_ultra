@@ -67,6 +67,11 @@ export class PlacesService {
   getStations_Hour_Cont() {
     return this.http.get(`${this.uri}/stations/hourContData`);
   }
+
+  getStations_Sma() {
+    return this.http.get(`${this.uri}/stations/sma_data`);
+  }
+
   findPlaces(find, where) {
     const find_places_at = {
       find: find,
@@ -100,4 +105,13 @@ export class PlacesService {
 
   }
 
+  // The below function for hour old divvy status
+  plotSMA(placeName) {
+    const find_stations_at = {
+      placeName: placeName,
+    };
+
+    return this.http.post(`${this.uri}/stations/sma`, find_stations_at, httpOptions);
+
+  }
 }

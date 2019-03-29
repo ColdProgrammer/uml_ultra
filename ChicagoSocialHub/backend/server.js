@@ -95,7 +95,8 @@ router.all('*', function (req, res, next) {
 var places_found = [];
 var stations_found = [];
 var stations_found_hourold = [];
-var stations_found_hour_cont;
+var stations_found_hour_cont = [];
+var stations_found_hour_sma = [];
 var place_selected;
 var station_selected;
 
@@ -125,16 +126,11 @@ router.route('/place_selected').get((req, res) => {
    
 });
 
-
-
 router.route('/allPlaces').get((req, res) => {
 
     res.json(places_found)
    
 });
-
-
-
 
 router.route('/stations').get((req, res) => {
    
@@ -153,6 +149,13 @@ router.route('/stations/hourOldData').get((req, res) => {
 router.route('/stations/hourContData').get((req, res) => {
    
     res.json(stations_found_hour_cont)
+           
+});
+
+// Get SMA data
+router.route('/stations/sma_data').get((req, res) => {
+   
+    res.json(stations_found_hour_sma)
            
 });
 
@@ -201,7 +204,7 @@ router.route('/stations/find').post((req, res) => {
 
 });
 
-// Added to get  1 hour old divvy data
+// Added to get 1 hour/24 hour/7 days old divvy data
 router.route('/stations/hourold').post((req, res) => {
 
     var str = JSON.stringify(req.body, null, 4);
@@ -255,15 +258,51 @@ router.route('/stations/hourold').post((req, res) => {
 // Async function to set data for every 3 min
 const intervalObj = setInterval(() => {
     console.log('interviewing the interval every 3 min');
-    var query_hour = {
-        // give the query a unique name
-        name: 'fetch-hour-cont-divvy',
-        // This query fetches an hour long data of the divvy bikes
-        text: ' select * from divvy_stations_logs d where d.lastcommunicationtime > now() - interval \'1 hour\' and d.latitude = $1 and d.longitude = $2 order by (d.lastcommunicationtime)',
-        values: [station_selected.latitude, station_selected.longitude]
+    if(station_selected != null) {
+        var query_hour = {
+            // give the query a unique name
+            name: 'fetch-hour-cont-divvy',
+            // This query fetches an hour long data of the divvy bikes
+            text: ' select * from divvy_stations_logs d where d.lastcommunicationtime > now() - interval \'1 hour\' and d.latitude = $1 and d.longitude = $2 order by (d.lastcommunicationtime)',
+            values: [station_selected.latitude, station_selected.longitude]
+        }
+        find_stations_from_divvy_hour_continous(query_hour)
     }
-    find_stations_from_divvy_hour_continous(query_hour)
   }, 180000);
+
+// Function to calculate data for SMA
+router.route('/stations/sma').post((req, res) => {
+    var str = JSON.stringify(req.body, null, 4);
+
+    for (var i = 0,len = stations_found.length; i < len; i++) {
+        if ( stations_found[i].stationName === req.body.placeName.stationName ) { // strict equality test
+            station_selected = stations_found[i];
+            break;
+        }
+    }
+    // Additional parameter to signify 1 hour/24 hours/7 days
+    let query_hour, query_day;
+        query_hour = {
+            // give the query a unique name
+            name: 'fetch-sma_hr-divvy',
+            // This query fetches an hour long data of the divvy bikes
+            text: ' select * from divvy_stations_logs d where d.lastcommunicationtime > now() - interval \'1 hour\' and d.latitude = $1 and d.longitude = $2 order by (d.lastcommunicationtime) LIMIT 30',
+            values: [station_selected.latitude, station_selected.longitude]
+        }
+
+        query_day = {
+            // give the query a unique name
+            name: 'fetch-sma_day-divvy',
+            // This query fetches a day long data of the divvy bikes
+            text: ' select * from divvy_stations_logs d where d.lastcommunicationtime > now() - interval \'24 hour\' and d.latitude = $1 and d.longitude = $2 order by (d.lastcommunicationtime) LIMIT 720',
+            values: [station_selected.latitude, station_selected.longitude]
+        }
+
+        find_stations_from_divvy_hour_sma(query_hour, query_day).then(function (response) {
+            var hits = response;
+            res.json({'sma_calculated': 'Added successfully'});
+        });
+});
 
 /////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////
@@ -360,6 +399,62 @@ async function find_stations_from_divvy_hour_continous(query) {
         };
 
         stations_found_hour_cont.push(station);
+
+    }
+}
+
+
+// SMA function
+
+function sma(period) {
+    var nums = [];
+    return function(num) {
+        nums.push(num);
+        if (nums.length > period)
+            nums.splice(0,1);  // remove the first element of the array
+        var sum = 0;
+        for (var i in nums)
+            sum += nums[i];
+        var n = period;
+        if (nums.length < period)
+            n = nums.length;
+        return(sum/n);
+    }
+}
+
+// Async function to calculate SMA
+
+async function find_stations_from_divvy_hour_sma(query_hour, query_day) {
+
+    const response_hour = await pgClient.query(query_hour);
+    const response_day = await pgClient.query(query_day);
+
+    let sma_hour = [];
+    let sma_day = [];
+    sma_30_data = sma(30);
+    console.log(sma_30_data);
+    stations_found_hour_sma = []
+    for (i = 0; i < response_hour.rows.length; i++) {
+        
+        plainTextDateTime =  moment(response_hour.rows[i].lastcommunicationtime).format('YYYY-MM-DD, h:mm:ss a');
+        // Calculate SMA here
+        sma_30 = sma_30_data(response_hour.rows[i].availabledocks)
+        console.log(sma_30);
+        var station = {
+                    "id": response_hour.rows[i].id,
+                    "stationName": response_hour.rows[i].stationname,
+                    "availableBikes": response_hour.rows[i].availablebikes,
+                    "availableDocks": response_hour.rows[i].availabledocks,
+                    "is_renting": response_hour.rows[i].is_renting,
+                    "lastCommunicationTime": plainTextDateTime,
+                    "latitude": response_hour.rows[i].latitude,    
+                    "longitude": response_hour.rows[i].longitude,
+                    "status": response_hour.rows[i].status,
+                    "totalDocks": response_hour.rows[i].totaldocks,
+                    "sma_30": sma_30
+        };
+        
+        stations_found_hour_sma.push(station);
 
     }
 }

@@ -38,6 +38,7 @@ import { StackBarChartDivvyComponent } from './components/stack-bar-chart-divvy/
 import { LineChartDivvyComponent } from './components/line-chart-divvy/line-chart-divvy.component';
 import { LineChartDayDivvyComponent } from './components/line-chart-day-divvy/line-chart-day-divvy.component';
 import { LineChartWeekDivvyComponent } from './components/line-chart-week-divvy/line-chart-week-divvy.component';
+import { SmaLineChartDivvyComponent } from './components/sma-line-chart-divvy/sma-line-chart-divvy.component';
 
 
 
@@ -51,6 +52,7 @@ const routes: Routes = [
   { path: 'line-chart-divvy', component: LineChartDivvyComponent},
   { path: 'line-chart-day-divvy', component: LineChartDayDivvyComponent},
   { path: 'line-chart-week-divvy', component: LineChartWeekDivvyComponent},
+  { path: 'sma-line-chart-divvy', component: SmaLineChartDivvyComponent},
 
   { path: '', redirectTo: 'find', pathMatch: 'full'}
 ];
@@ -66,6 +68,7 @@ const routes: Routes = [
     LineChartDivvyComponent,
     LineChartDayDivvyComponent,
     LineChartWeekDivvyComponent,
+    SmaLineChartDivvyComponent,
   ],
   imports: [
     BrowserModule,

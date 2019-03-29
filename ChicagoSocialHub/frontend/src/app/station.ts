@@ -23,5 +23,5 @@ export interface Station {
     longitude: Number;
     status: String;
     totalDocks: Number;
-
+    sma_30: Number;
 }

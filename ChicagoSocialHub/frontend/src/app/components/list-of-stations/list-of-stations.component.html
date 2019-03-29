@@ -82,6 +82,13 @@
         </td>
       </ng-container>
 
+      <ng-container matColumnDef="SMA">
+        <th mat-header-cell *matHeaderCellDef>SMA Chart</th>
+        <td mat-cell *matCellDef="let element"> 
+            <button mat-raised-button color="primary" (click)="plotSMA(element.stationName)">SMA Chart</button>
+        </td>
+      </ng-container>
+
 
 
 
