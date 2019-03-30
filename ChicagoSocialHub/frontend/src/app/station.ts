@@ -24,4 +24,6 @@ export interface Station {
     status: String;
     totalDocks: Number;
     sma_30: Number;
+    sma_720: Number;
+    sma: ['30', '720'];
 }

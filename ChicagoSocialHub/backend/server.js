@@ -432,26 +432,29 @@ async function find_stations_from_divvy_hour_sma(query_hour, query_day) {
     let sma_hour = [];
     let sma_day = [];
     sma_30_data = sma(30);
-    console.log(sma_30_data);
+    sma_720_data = sma(720);
+    // console.log(sma_30_data);
     stations_found_hour_sma = []
-    for (i = 0; i < response_hour.rows.length; i++) {
+    for (i = 0; i < response_day.rows.length; i++) {
         
-        plainTextDateTime =  moment(response_hour.rows[i].lastcommunicationtime).format('YYYY-MM-DD, h:mm:ss a');
+        plainTextDateTime =  moment(response_day.rows[i].lastcommunicationtime).format('YYYY-MM-DD, h:mm:ss a');
         // Calculate SMA here
-        sma_30 = sma_30_data(response_hour.rows[i].availabledocks)
+        sma_30 = sma_30_data(response_day.rows[i].availabledocks)
+        sma_720 = sma_720_data(response_day.rows[i].availabledocks)
         console.log(sma_30);
         var station = {
-                    "id": response_hour.rows[i].id,
-                    "stationName": response_hour.rows[i].stationname,
-                    "availableBikes": response_hour.rows[i].availablebikes,
-                    "availableDocks": response_hour.rows[i].availabledocks,
-                    "is_renting": response_hour.rows[i].is_renting,
+                    "id": response_day.rows[i].id,
+                    "stationName": response_day.rows[i].stationname,
+                    "availableBikes": response_day.rows[i].availablebikes,
+                    "availableDocks": response_day.rows[i].availabledocks,
+                    "is_renting": response_day.rows[i].is_renting,
                     "lastCommunicationTime": plainTextDateTime,
-                    "latitude": response_hour.rows[i].latitude,    
-                    "longitude": response_hour.rows[i].longitude,
-                    "status": response_hour.rows[i].status,
-                    "totalDocks": response_hour.rows[i].totaldocks,
-                    "sma_30": sma_30
+                    "latitude": response_day.rows[i].latitude,    
+                    "longitude": response_day.rows[i].longitude,
+                    "status": response_day.rows[i].status,
+                    "totalDocks": response_day.rows[i].totaldocks,
+                    "sma_30": sma_30,
+                    "sma_720": sma_720
         };
         
         stations_found_hour_sma.push(station);
