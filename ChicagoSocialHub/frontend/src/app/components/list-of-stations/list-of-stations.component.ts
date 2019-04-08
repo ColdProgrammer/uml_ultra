@@ -51,7 +51,7 @@ interface Location {
 })
 export class ListOfStationsComponent implements OnInit {
 
-  selected = 'option2'; // Selecting 24 hour value by default (2-way binding)
+  selected = 'option1'; // Selecting 24 hour value by default (2-way binding)
   circleRadius = 3000; // km
 
   public location: Location = {

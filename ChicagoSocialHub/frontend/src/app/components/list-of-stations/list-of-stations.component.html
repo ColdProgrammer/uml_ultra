@@ -73,8 +73,8 @@
           <mat-form-field>
             <mat-label>Select an option</mat-label>
             <mat-select [(value)]="selected">
-              <mat-option value="option1" (click)="plotLineHour(element.stationName, 'hour')">Hourly Line Chart</mat-option>
-              <mat-option selected="selected" value="option2" (click)="plotLineHour(element.stationName, 'day')">24 Hour Line Chart</mat-option>
+              <mat-option selected="selected" value="option1" (click)="plotLineHour(element.stationName, 'hour')">Hourly Line Chart</mat-option>
+              <mat-option  value="option2" (click)="plotLineHour(element.stationName, 'day')">24 Hour Line Chart</mat-option>
               <mat-option value="option3" (click)="plotLineHour(element.stationName, 'week')">7 days Line Chart</mat-option>
             </mat-select>
           </mat-form-field>

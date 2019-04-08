@@ -49,12 +49,14 @@
 
 const express = require('express');
 
+const http = require('http').Server(express);
 var pg = require('pg');
 
 var bodyParser = require('body-parser');
 
 const moment = require('moment');
 
+const io = require('socket.io')(http);
 
 // Connect to elasticsearch Server
 
@@ -267,9 +269,14 @@ const intervalObj = setInterval(() => {
             values: [station_selected.latitude, station_selected.longitude]
         }
         find_stations_from_divvy_hour_continous(query_hour)
+        io.sockets.emit('updatedStation', stations_found_hour_cont);
     }
   }, 180000);
 
+  io.on('connection', function (socket) {
+    console.log('a user connected');
+  });
+  
 // Function to calculate data for SMA
 router.route('/stations/sma').post((req, res) => {
     var str = JSON.stringify(req.body, null, 4);

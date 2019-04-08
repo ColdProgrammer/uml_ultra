@@ -17,7 +17,7 @@ import { PlacesService } from '../../places.service';
   styleUrls: ['./sma-line-chart-divvy.component.css']
 })
 export class SmaLineChartDivvyComponent implements OnInit {
-  title = 'Line Chart';
+  title = 'SMA Line Chart';
   // private time = this.route.snapshot.paraMap.get('time');
   stations: Station[];
 
@@ -55,13 +55,13 @@ export class SmaLineChartDivvyComponent implements OnInit {
 
 
     this.x = d3Scale.scaleBand().rangeRound([0, this.width]).padding(0.1);
-    var	y = d3Scale.scaleLinear().range([this.height, 0]);
+    let	y = d3Scale.scaleLinear().range([this.height, 0]);
 
-    var	valueline  = d3Shape.line()
+    let	valueline  = d3Shape.line()
     .x( (d: any) => this.x(d.lastCommunicationTime) )
     .y( (d: any) => y(d.sma_30) );
-    
-var	valueline2 = d3Shape.line()
+
+    let	valueline2 = d3Shape.line()
     .x( (d: any) => this.x(d.lastCommunicationTime) )
     .y( (d: any) => y(d.sma_720) );
 
@@ -93,7 +93,7 @@ var	valueline2 = d3Shape.line()
         .attr('transform', 'translate(0,' + this.height + ')')
         .call(d3Axis.axisBottom(this.x));
 
-      this.svg.append('g')			// Add the Y Axis
+        this.svg.append('g')			// Add the Y Axis
         .attr('class', 'y axis')
         .call(d3Axis.axisLeft(y));
 

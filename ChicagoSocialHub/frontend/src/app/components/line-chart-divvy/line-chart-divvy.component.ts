@@ -1,4 +1,6 @@
 import { Component, ViewEncapsulation, OnInit } from '@angular/core';
+import {ChangeDetectionStrategy, ElementRef, Input, OnChanges, ViewChild} from '@angular/core';
+
 import { Routes, RouterModule } from '@angular/router';
 import { ActivatedRoute, Router } from '@angular/router';
 import * as d3 from 'd3-selection';
@@ -15,13 +17,13 @@ import { Observable } from 'rxjs';
   selector: 'app-line-chart-divvy',
   encapsulation: ViewEncapsulation.None,
   templateUrl: './line-chart-divvy.component.html',
-  styleUrls: ['./line-chart-divvy.component.css']
+  styleUrls: ['./line-chart-divvy.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class LineChartDivvyComponent implements OnInit {
+export class LineChartDivvyComponent implements OnInit, OnChanges {
 
   title = 'Line Chart';
   // private time = this.route.snapshot.paraMap.get('time');
-  stations: Station[];
   private sub;
   private time;
   private margin = {top: 20, right: 20, bottom: 30, left: 50};
@@ -35,6 +37,17 @@ export class LineChartDivvyComponent implements OnInit {
   constructor(private placesService: PlacesService, private router: Router, private route: ActivatedRoute) {
       this.width = 900 - this.margin.left - this.margin.right;
       this.height = 500 - this.margin.top - this.margin.bottom;
+  }
+
+  @Input()
+  stations: Station[];
+
+  ngOnChanges() {
+    if (this.stations) {
+      this.fetchStations();
+    } else if (this.stations) {
+      this.fetchStations();
+    }
   }
 
   ngOnInit() {
@@ -54,7 +67,7 @@ export class LineChartDivvyComponent implements OnInit {
 
   fetchStations() {
     this.placesService
-      .getStations_Hour_Cont()
+      .getStations_Hour_Old()
       .subscribe((data: Station[]) => {
         this.stations = data;
         console.log(data);

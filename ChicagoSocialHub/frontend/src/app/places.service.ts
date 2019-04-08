@@ -15,10 +15,11 @@
 
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-
+import { Station } from './station';
 import { HttpHeaders } from '@angular/common/http';
 
-
+import { Subject, from } from 'rxjs';
+import * as socketio from 'socket.io-client';
 
 import { Observable, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
@@ -113,5 +114,17 @@ export class PlacesService {
 
     return this.http.post(`${this.uri}/stations/sma`, find_stations_at, httpOptions);
 
+  }
+
+  getUpdates() {
+    let socket = socketio(this.uri);
+    let station;
+    let stationSubObservable = from(station);
+
+    socket.on('updatedStation', (marketStatus: Station[]) => {
+      station.next(marketStatus);
+    });
+
+    return stationSubObservable;
   }
 }
