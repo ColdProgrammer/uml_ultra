@@ -44,6 +44,7 @@ const httpOptions = {
 export class PlacesService {
 
   uri = 'http://localhost:4000';
+  listuri = 'http://localhost:3000';
 
   constructor(private http: HttpClient) {
 
@@ -73,7 +74,12 @@ export class PlacesService {
     return this.http.get(`${this.uri}/stations/sma_data`);
   }
 
+  getStations_Logstash() {
+    return this.http.get(`${this.uri}/stations/logstash`);
+  }
+
   findPlaces(find, where) {
+
     const find_places_at = {
       find: find,
       where: where
@@ -83,19 +89,25 @@ export class PlacesService {
 
   }
 
+  findStationLogstash(place, time) {
+    const find_station_at = {
+      find: place,
+      where: time
+    };
+
+    return this.http.post(`${this.uri}/places/find/logstash`, find_station_at, httpOptions);
+
+  }
 
   findStations(placeName) {
     const find_stations_at = {
       placeName: placeName
     };
-
-    var str = JSON.stringify(find_stations_at, null, 2);
-
-
+    const str = JSON.stringify(find_stations_at, null, 2);
     return this.http.post(`${this.uri}/stations/find`, find_stations_at, httpOptions);
-
   }
-// The below function for hour old divvy status
+
+  // The below function for hour old divvy status
   plotLineHour(placeName, time) {
     const find_stations_at = {
       placeName: placeName,
@@ -117,9 +129,10 @@ export class PlacesService {
   }
 
   getUpdates() {
-    let socket = socketio(this.uri);
+    console.log('inside service');
+    const socket = socketio(this.listuri);
     let station;
-    let stationSubObservable = from(station);
+    const stationSubObservable = from(station);
 
     socket.on('updatedStation', (marketStatus: Station[]) => {
       station.next(marketStatus);

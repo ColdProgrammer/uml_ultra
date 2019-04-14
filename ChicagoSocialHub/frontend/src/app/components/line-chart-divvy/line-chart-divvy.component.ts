@@ -20,6 +20,7 @@ import { Observable } from 'rxjs';
   styleUrls: ['./line-chart-divvy.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
+
 export class LineChartDivvyComponent implements OnInit, OnChanges {
 
   title = 'Line Chart';
@@ -44,8 +45,10 @@ export class LineChartDivvyComponent implements OnInit, OnChanges {
 
   ngOnChanges() {
     if (this.stations) {
+      console.log('in here');
       this.fetchStations();
-    } else if (this.stations) {
+    } else {
+      console.log('in here else');
       this.fetchStations();
     }
   }
@@ -67,7 +70,7 @@ export class LineChartDivvyComponent implements OnInit, OnChanges {
 
   fetchStations() {
     this.placesService
-      .getStations_Hour_Old()
+      .getStations_Logstash()
       .subscribe((data: Station[]) => {
         this.stations = data;
         console.log(data);

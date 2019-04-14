@@ -1,5 +1,6 @@
 import { Component, ViewEncapsulation, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import * as d3 from 'd3-selection';
 import * as d3Scale from 'd3-scale';
 import * as d3ScaleChromatic from 'd3-scale-chromatic';
@@ -22,6 +23,7 @@ export class SmaLineChartDivvyComponent implements OnInit {
   stations: Station[];
 
   private margin = {top: 20, right: 20, bottom: 30, left: 50};
+  selected = 'option1'; // Selecting 24 hour value by default (2-way binding)
   private width: number;
   private height: number;
   private x: any;
@@ -30,7 +32,7 @@ export class SmaLineChartDivvyComponent implements OnInit {
   private z: any;
   private svg: any;
   private line: d3Shape.Line<[number, number]>;
-  constructor(private placesService: PlacesService) {
+  constructor(private placesService: PlacesService, private router: Router) {
     this.width = 1500 - this.margin.left - this.margin.right;
     this.height = 500 - this.margin.top - this.margin.bottom;
   }
@@ -41,28 +43,48 @@ export class SmaLineChartDivvyComponent implements OnInit {
 
   fetchStations() {
     this.placesService
-      .getStations_Sma()
+      .getStations_Logstash()
       .subscribe((data: Station[]) => {
         this.stations = data;
-        // console.log(data);
-        this.initChart();
+        console.log(data);
+        this.initChart_sma();
         // this.drawAxis();
         // this.drawPath();
       });
   }
 
-  private initChart(): void {
+  // Function to plot graphs according to time range
+  plotLineHour(time) {
+    // This function is called when one clicks on Dropdown time range
+    console.log('placeName');
+    console.log(this.stations);
+    let place_selected = null;
+        place_selected =  this.stations[0];
+    console.log(place_selected);
+    this.placesService.findStationLogstash(place_selected, time).subscribe(() => {
+      this.router.navigate(['/sma-line-chart-divvy',  { time: time}]);
+      });
+  }
 
+  plotSMA30() {
+    console.log('checkbox 30 onClick works!!!');
+  }
+
+  // Function called when checkbox for SMA 720 is clicked
+  plotSMA720(){
+    console.log('checkbox 720 onClick works!!!');
+  }
+  private initChart_sma(): void {
 
     this.x = d3Scale.scaleBand().rangeRound([0, this.width]).padding(0.1);
-    let	y = d3Scale.scaleLinear().range([this.height, 0]);
+    const	y = d3Scale.scaleLinear().range([this.height, 0]);
 
-    let	valueline  = d3Shape.line()
-    .x( (d: any) => this.x(d.lastCommunicationTime) )
+    const	valueline  = d3Shape.line()
+    .x( (d: any) => this.x(d.x_axis) )
     .y( (d: any) => y(d.sma_30) );
 
-    let	valueline2 = d3Shape.line()
-    .x( (d: any) => this.x(d.lastCommunicationTime) )
+    const	valueline2 = d3Shape.line()
+    .x( (d: any) => this.x(d.x_axis) )
     .y( (d: any) => y(d.sma_720) );
 
     this.svg = d3.select('svg')
@@ -73,8 +95,11 @@ export class SmaLineChartDivvyComponent implements OnInit {
 
 
     // Scale the range of the data
-    this.x.domain(this.stations.map((d) => (d.lastCommunicationTime)));
-    y.domain([0, d3Array.max(this.stations, function(d) { return Math.max( parseInt(d.sma_30.toString(), 10), parseInt(d.sma_720.toString(), 10)); })]);
+    this.x.domain(this.stations.map((d) => (d.x_axis.toString())));
+    console.log(this.stations.map((d) => (d.x_axis.toString())));
+    y.domain([0, d3Array.max(this.stations, function(d) {
+      return Math.max( parseInt(d.sma_30.toString(), 10), parseInt(d.sma_720.toString(), 10));
+    })]);
 
     this.svg.append('path')		// Add the valueline path.
         .datum(this.stations)

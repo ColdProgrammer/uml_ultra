@@ -5,7 +5,7 @@
 /// This file and the source code provided can be used only for   
 /// the projects and assignments of this course
 
-/// Last Edit by Dr. Atef Bader: 1/27/2019
+/// Last Edit by Srajan: 04/14/2019
 
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -57,6 +57,8 @@ var bodyParser = require('body-parser');
 const moment = require('moment');
 
 const io = require('socket.io')(http);
+const port = 3000;
+
 
 // Connect to elasticsearch Server
 
@@ -92,15 +94,18 @@ router.all('*', function (req, res, next) {
     next();
 });
 
-
+http.listen(port, () => {
+    console.log(`Listening on *:${port}`);
+  });
 
 var places_found = [];
 var stations_found = [];
 var stations_found_hourold = [];
 var stations_found_hour_cont = [];
-var stations_found_hour_sma = [];
+var stations_found_hour_logstash = [];
 var place_selected;
 var station_selected;
+var time;
 
 
 
@@ -141,7 +146,7 @@ router.route('/stations').get((req, res) => {
 });
 
 // Get hour old data from server
-router.route('/stations/hourOldData').get((req, res) => {
+/*router.route('/stations/hourOldData').get((req, res) => {
    
     res.json(stations_found_hourold)
            
@@ -159,6 +164,13 @@ router.route('/stations/sma_data').get((req, res) => {
    
     res.json(stations_found_hour_sma)
            
+});*/
+
+// Get logstash  data from server
+router.route('/stations/logstash').get((req, res) => {
+   
+    res.json(stations_found_hour_logstash)
+           
 });
 
 router.route('/places/find').post((req, res) => {
@@ -174,7 +186,18 @@ router.route('/places/find').post((req, res) => {
 
 });
 
+// Route for stations
 
+router.route('/places/find/logstash').post((req, res) => {
+
+    var str = JSON.stringify(req.body, null, 4);
+
+    find_stations_from_logstash(req.body.find, req.body.where).then(function (response) {
+        var hits = response;
+        res.json(stations_found_hour_logstash);
+    });
+
+});
 
 
 
@@ -207,7 +230,7 @@ router.route('/stations/find').post((req, res) => {
 });
 
 // Added to get 1 hour/24 hour/7 days old divvy data
-router.route('/stations/hourold').post((req, res) => {
+/*router.route('/stations/hourold').post((req, res) => {
 
     var str = JSON.stringify(req.body, null, 4);
 
@@ -255,21 +278,21 @@ router.route('/stations/hourold').post((req, res) => {
     });
  
 
-});
+});*/
 
 // Async function to set data for every 3 min
 const intervalObj = setInterval(() => {
     console.log('interviewing the interval every 3 min');
     if(station_selected != null) {
-        var query_hour = {
+        /*var query_hour = {
             // give the query a unique name
             name: 'fetch-hour-cont-divvy',
             // This query fetches an hour long data of the divvy bikes
             text: ' select * from divvy_stations_logs d where d.lastcommunicationtime > now() - interval \'1 hour\' and d.latitude = $1 and d.longitude = $2 order by (d.lastcommunicationtime)',
             values: [station_selected.latitude, station_selected.longitude]
-        }
-        find_stations_from_divvy_hour_continous(query_hour)
-        io.sockets.emit('updatedStation', stations_found_hour_cont);
+        }*/
+        find_stations_from_divvy_hour_continous(station_selected.placeName, time)
+        // io.sockets.emit('updatedStation', stations_found_hour_logstash);
     }
   }, 180000);
 
@@ -278,7 +301,7 @@ const intervalObj = setInterval(() => {
   });
   
 // Function to calculate data for SMA
-router.route('/stations/sma').post((req, res) => {
+/*router.route('/stations/sma').post((req, res) => {
     var str = JSON.stringify(req.body, null, 4);
 
     for (var i = 0,len = stations_found.length; i < len; i++) {
@@ -309,7 +332,7 @@ router.route('/stations/sma').post((req, res) => {
             var hits = response;
             res.json({'sma_calculated': 'Added successfully'});
         });
-});
+});*/
 
 /////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////
@@ -352,7 +375,7 @@ async function find_stations_from_divvy(query) {
 
 // async function for hour old data
 
-async function find_stations_from_divvy_hour_old(query) {
+/*async function find_stations_from_divvy_hour_old(query) {
 
     const response = await pgClient.query(query);
 
@@ -379,7 +402,7 @@ async function find_stations_from_divvy_hour_old(query) {
 
     }
 }
-
+*/
 // async function for contious updation of data
 
 async function find_stations_from_divvy_hour_continous(query) {
@@ -431,7 +454,7 @@ function sma(period) {
 
 // Async function to calculate SMA
 
-async function find_stations_from_divvy_hour_sma(query_hour, query_day) {
+/*async function find_stations_from_divvy_hour_sma(query_hour, query_day) {
 
     const response_hour = await pgClient.query(query_hour);
     const response_day = await pgClient.query(query_day);
@@ -467,7 +490,7 @@ async function find_stations_from_divvy_hour_sma(query_hour, query_day) {
         stations_found_hour_sma.push(station);
 
     }
-}
+}*/
 
 /////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////
@@ -484,11 +507,11 @@ async function find_places_from_yelp(place, where) {
     places_found = [];
 
 //////////////////////////////////////////////////////////////////////////////////////
-// Using the business name to search for businesses will leead to incomplete results
+// Using the business name to search for businesses will lead to incomplete results
 // better to search using categorisa/alias and title associated with the business name
 // For example one of the famous places in chicago for HotDogs is Portillos
 // However, it also offers Salad and burgers
-// Here is an example of a busness review from Yelp for Pertilos
+// Here is an example of a buisness review from Yelp for Portillos
 //               alias': 'portillos-hot-dogs-chicago-4',
 //              'categories': [{'alias': 'hotdog', 'title': 'Hot Dogs'},
 //                             {'alias': 'salad', 'title': 'Salad'},
@@ -534,18 +557,18 @@ async function find_places_from_yelp(place, where) {
 
     results = await esClient.search({index: 'chicago_yelp_reviews', body: body});
 
+    
     results.hits.hits.forEach((hit, index) => {
         
-
         var place = {
-                "name": hit._source.name,
-                "display_phone": hit._source.display_phone,
-                "address1": hit._source.location.address1,
-                "is_closed": hit._source.is_closed,
-                "rating": hit._source.rating,
-                "review_count": hit._source.review_count,
-                "latitude": hit._source.coordinates.latitude,    
-                "longitude": hit._source.coordinates.longitude
+            "name": hit._source.name,
+            "display_phone": hit._source.display_phone,
+            "address1": hit._source.location.address1,
+            "is_closed": hit._source.is_closed,
+            "rating": hit._source.rating,
+            "review_count": hit._source.review_count,
+            "latitude": hit._source.coordinates.latitude,    
+            "longitude": hit._source.coordinates.longitude
         };
 
         places_found.push(place);
@@ -556,6 +579,76 @@ async function find_places_from_yelp(place, where) {
       
 }
 
+// A new async function to display realtime chart for 1 hr
+
+async function find_stations_from_logstash(stationName, time) {
+
+    stations_found_hour_logstash =[];
+    this.time = time;
+    if(time == "hour") {
+        query_val = stationName.lastCommunicationTime.substr(0,15);
+        size="30";
+        // x_axis=[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60];
+    } else if(time == "day") {
+        query_val = stationName.lastCommunicationTime.substr(0,11);
+        size="720";
+        // x_axis=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24];
+    } 
+    let body = 
+    {
+        "size": size,
+        "from": "0",
+        "query": {
+            "bool": {
+                "should": [
+                    {
+                        "match_phrase": {
+                            "stationName": {
+                                "query": stationName.stationName
+                            }
+                        }
+                    },
+                    {
+                        "match_phrase_prefix": {
+                            "lastCommunicationTime": {
+                                "query": query_val
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    }
+
+    results = await esClient.search({index: 'divvy_stations_logs', body: body});
+
+    sma_30_data = sma(30);
+    sma_720_data = sma(720);
+    count =0;
+    results.hits.hits.forEach((hit, index) => {
+        count = count +2;
+        sma_30 = sma_30_data(hit._source.availableDocks)
+        sma_720 = sma_720_data(hit._source.availableDocks)
+        var station = {
+            "id": hit._source.id,
+            "stationName": hit._source.stationName,
+            "availableBikes": hit._source.availableBikes,
+            "availableDocks": hit._source.availableDocks,
+            "is_renting": hit._source.is_renting,
+            "x_axis": count,
+            "lastCommunicationTime": hit._source.lastCommunicationTime,
+            "latitude": hit._source.latitude,    
+            "longitude": hit._source.longitude,
+            "status": hit._source.status,
+            "totalDocks": hit._source.totalDocks,
+            "sma_30": sma_30,
+            "sma_720": sma_720
+        };
+
+        stations_found_hour_logstash.push(station);
+
+    });
+}
 
 
 app.use('/', router);

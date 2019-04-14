@@ -19,6 +19,7 @@ export interface Station {
     availableDocks: Number;
     is_renting: String;
     lastCommunicationTime: String;
+    x_axis: Number[];
     latitude: Number;
     longitude: Number;
     status: String;

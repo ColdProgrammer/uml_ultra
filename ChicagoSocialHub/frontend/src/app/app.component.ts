@@ -12,9 +12,9 @@ export class AppComponent {
   title = 'ChicagoSocialHub-app';
   stations;
   constructor(private placesServ: PlacesService) {
-    this.placesServ.getStations_Hour_Old().subscribe((data: Station[]) => {
+    placesServ.getStations_Logstash().subscribe((data: Station[]) => {
       this.stations = data;
-      const stationUpdateObservable =  this.placesServ.getUpdates();  // 1
+      const stationUpdateObservable =  placesServ.getUpdates();  // 1
       stationUpdateObservable.subscribe((latestStatus: Station[]) => {  // 2
         this.stations = latestStatus;  // 3
       });

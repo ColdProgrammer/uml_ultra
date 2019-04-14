@@ -51,7 +51,7 @@ interface Location {
 })
 export class ListOfStationsComponent implements OnInit {
 
-  selected = 'option1'; // Selecting 24 hour value by default (2-way binding)
+  
   circleRadius = 3000; // km
 
   public location: Location = {
@@ -66,7 +66,7 @@ export class ListOfStationsComponent implements OnInit {
   placeSelected: Place;
 
   displayedColumns = ['id', 'stationName', 'availableBikes', 'availableDocks', 'is_renting', 'lastCommunicationTime', 'latitude',
-  'longitude', 'status', 'totalDocks', 'LineChart', 'SMA'];
+  'longitude', 'status', 'totalDocks', 'LineChart'];
 
 
   icon = {
@@ -84,8 +84,6 @@ export class ListOfStationsComponent implements OnInit {
   ngOnInit() {
     this.fetchStations();
     this.getPlaceSelected();
-
-
   }
 
   fetchStations() {
@@ -114,7 +112,7 @@ clickedMarker(label: string, index: number) {
   console.log(`clicked the marker: ${label || index}`);
 }
 
-plotLineHour(placeName, time) {
+/*plotLineHour(placeName, time) {
   // This function is called when one clicks on Line Chart button
   console.log('placeName');
   console.log(placeName);
@@ -127,10 +125,10 @@ plotLineHour(placeName, time) {
       }
     }
   console.log(place_selected);
-  this.placesService.plotLineHour(place_selected, time).subscribe(() => {
+  this.placesService.findStationLogstash(place_selected, time).subscribe(() => {
     this.router.navigate(['/line-chart-divvy',  { time: time}]);
     });
-}
+}*/
 
 plotSMA(placeName) {
   // This function is called when one clicks on SMA Chart button
@@ -142,7 +140,7 @@ plotSMA(placeName) {
       }
     }
   console.log(place_selected);
-  this.placesService.plotSMA(place_selected).subscribe(() => {
+  this.placesService.findStationLogstash(place_selected, 'hour').subscribe(() => {
     this.router.navigate(['/sma-line-chart-divvy']);
     });
 }
