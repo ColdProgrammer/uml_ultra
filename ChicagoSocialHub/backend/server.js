@@ -624,9 +624,9 @@ async function find_stations_from_logstash(stationName, time) {
 
     sma_30_data = sma(30);
     sma_720_data = sma(720);
-    count =0;
+    count=0;
     results.hits.hits.forEach((hit, index) => {
-        count = count +2;
+        count = count+2;
         sma_30 = sma_30_data(hit._source.availableDocks)
         sma_720 = sma_720_data(hit._source.availableDocks)
         var station = {
