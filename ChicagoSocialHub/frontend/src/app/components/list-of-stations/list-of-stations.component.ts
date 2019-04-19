@@ -130,8 +130,8 @@ clickedMarker(label: string, index: number) {
     });
 }*/
 
-plotSMA(placeName) {
-  // This function is called when one clicks on SMA Chart button
+goToDashboard(placeName) {
+  // This function is called when one clicks on DashBoard button
   let place_selected = null;
   for (let i = 0, len = this.stations.length; i < len; i++) {
     if ( this.stations[i].stationName === placeName ) { // strict equality test
@@ -141,7 +141,7 @@ plotSMA(placeName) {
     }
   console.log(place_selected);
   this.placesService.findStationLogstash(place_selected, 'hour').subscribe(() => {
-    this.router.navigate(['/sma-line-chart-divvy']);
+    this.router.navigate(['/dashboard']);
     });
 }
 

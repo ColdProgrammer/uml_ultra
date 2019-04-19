@@ -179,7 +179,7 @@ router.route('/places/find').post((req, res) => {
 
     find_places_task_completed = false;             
 
-    find_places_from_yelp(req.body.find, req.body.where).then(function (response) {
+    find_places_from_yelp(req.body.find, req.body.where, req.body.zipcode).then(function (response) {
         var hits = response;
         res.json(places_found);
     });
@@ -502,7 +502,7 @@ function sma(period) {
 
 
 
-async function find_places_from_yelp(place, where) {
+async function find_places_from_yelp(place, where, zipcode) {
 
     places_found = [];
 
@@ -520,40 +520,77 @@ async function find_places_from_yelp(place, where) {
 //////////////////////////////////////////////////////////////////////////////////////
 
 
-    let body = {
-        size: 1000,
-        from: 0,
-        "query": {
-          "bool" : {
-            "must" : {
-               "term" : { "categories.alias" : place } 
-            },
 
-
-            "filter": {
-                "term" : { "location.address1" : where  }
-            },
-
-
-            "must_not" : {
-              "range" : {
-                "rating" : { "lte" : 3 }
+    let body;
+    if(zipcode == undefined || zipcode == null || zipcode == ""){
+        body = {
+            size: 1000,
+            from: 0,
+            "query": {
+              "bool" : {
+                "must" : {
+                   "term" : { "categories.alias" : place } 
+                },
+    
+    
+                "filter": {
+                    "term" : { "location.address1" : where  }
+                },
+    
+    
+                "must_not" : {
+                  "range" : {
+                    "rating" : { "lte" : 3 }
+                  }
+                },
+    
+                "must_not" : {
+                  "range" : {
+                    "review_count" : { "lte" : 500 }
+                  }
+                },
+    
+                "should" : [
+                  { "term" : { "is_closed" : "false" } }
+                ],
               }
-            },
-
-            "must_not" : {
-              "range" : {
-                "review_count" : { "lte" : 500 }
+            }
+        }
+    } else {
+        body = {
+            size: 1000,
+            from: 0,
+            "query": {
+              "bool" : {
+                "must" : {
+                   "term" : { "categories.alias" : place } 
+                },
+    
+    
+                "filter": {
+                    "term" : { "location.zip_code" : zipcode  }
+                },
+    
+    
+                "must_not" : {
+                  "range" : {
+                    "rating" : { "lte" : 3 }
+                  }
+                },
+    
+                "must_not" : {
+                  "range" : {
+                    "review_count" : { "lte" : 500 }
+                  }
+                },
+    
+                "should" : [
+                  { "term" : { "is_closed" : "false" } }
+                ],
               }
-            },
-
-            "should" : [
-              { "term" : { "is_closed" : "false" } }
-            ],
-          }
+            }
         }
     }
-
 
     results = await esClient.search({index: 'chicago_yelp_reviews', body: body});
 
@@ -574,7 +611,7 @@ async function find_places_from_yelp(place, where) {
         places_found.push(place);
 
     });
-
+    console.log(places_found)
     find_places_task_completed = true;             
       
 }

@@ -78,11 +78,12 @@ export class PlacesService {
     return this.http.get(`${this.uri}/stations/logstash`);
   }
 
-  findPlaces(find, where) {
+  findPlaces(find, where, zipcode) {
 
     const find_places_at = {
       find: find,
-      where: where
+      where: where,
+      zipcode: zipcode
     };
 
     return this.http.post(`${this.uri}/places/find`, find_places_at, httpOptions);

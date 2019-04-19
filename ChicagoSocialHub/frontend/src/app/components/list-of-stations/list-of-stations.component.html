@@ -6,12 +6,7 @@
       &nbsp; &nbsp; &nbsp; 
       <mat-icon>search</mat-icon>
     </button>
-    &nbsp; &nbsp; &nbsp;
-    <button mat-raised-button color="primary" routerLink="/stack-chart-divvy">
-      Stack Bar Chart
-      &nbsp; &nbsp; &nbsp; 
-      <mat-icon>show_chart</mat-icon>
-    </button>
+    
     <br><br>
     <mat-divider></mat-divider>
     <br>
@@ -85,10 +80,10 @@
       <ng-container matColumnDef="LineChart">
         <th mat-header-cell *matHeaderCellDef>Line Chart</th>
         <td mat-cell *matCellDef="let element"> 
-            <button mat-raised-button color="primary" (click)="plotSMA(element.stationName)">
-              Line Chart
-              &nbsp; &nbsp; &nbsp; 
-              <mat-icon>show_chart</mat-icon>  
+            <button mat-raised-button color="primary" (click)="goToDashboard(element.stationName)">
+              DashBoard
+              &nbsp; &nbsp; &nbsp;
+              <mat-icon>dashboard</mat-icon>  
             </button>
         </td>
         
