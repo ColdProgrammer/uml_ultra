@@ -140,7 +140,7 @@ goToDashboard(placeName) {
       }
     }
   console.log(place_selected);
-  this.placesService.findStationLogstash(place_selected, 'hour').subscribe(() => {
+  this.placesService.findStationLogstash(place_selected, 1).subscribe(() => {
     this.router.navigate(['/dashboard']);
     });
 }

@@ -78,6 +78,10 @@ export class PlacesService {
     return this.http.get(`${this.uri}/stations/logstash`);
   }
 
+  getStations_PieChart() {
+    return this.http.get(`${this.uri}/stations/piechart`);
+  }
+
   findPlaces(find, where, zipcode) {
 
     const find_places_at = {
@@ -108,6 +112,17 @@ export class PlacesService {
     return this.http.post(`${this.uri}/stations/find`, find_stations_at, httpOptions);
   }
 
+  findPieChart() {
+    const find_station_at = {
+      find: '',
+      where: ''
+    };
+
+    return this.http.post(`${this.uri}/places/find/piechart`, find_station_at, httpOptions);
+
+  }
+
+
   // The below function for hour old divvy status
   plotLineHour(placeName, time) {
     const find_stations_at = {
@@ -119,7 +134,7 @@ export class PlacesService {
 
   }
 
-  // The below function for hour old divvy status
+  // The below function for hour old  sma divvy status
   plotSMA(placeName) {
     const find_stations_at = {
       placeName: placeName,

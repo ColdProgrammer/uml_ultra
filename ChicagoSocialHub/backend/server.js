@@ -100,7 +100,7 @@ http.listen(port, () => {
 
 var places_found = [];
 var stations_found = [];
-var stations_found_hourold = [];
+var piechart_info = [];
 var stations_found_hour_cont = [];
 var stations_found_hour_logstash = [];
 var place_selected;
@@ -173,6 +173,12 @@ router.route('/stations/logstash').get((req, res) => {
            
 });
 
+router.route('/stations/piechart').get((req, res) => {
+   
+    res.json(piechart_info)
+           
+});
+
 router.route('/places/find').post((req, res) => {
 
     var str = JSON.stringify(req.body, null, 4);
@@ -192,10 +198,28 @@ router.route('/places/find/logstash').post((req, res) => {
 
     var str = JSON.stringify(req.body, null, 4);
 
-    find_stations_from_logstash(req.body.find, req.body.where).then(function (response) {
-        var hits = response;
-        res.json(stations_found_hour_logstash);
-    });
+    date = new Date();
+    var time = req.body.where;
+    var formatted_date = moment(date.setHours(date.getHours() - time)).format('YYYY-MM-DD HH:mm:ss');
+    console.log(moment(date.setHours(date.getHours() - time)).format('YYYY-MM-DD HH:mm:ss'));
+
+    if(time == 1) {
+        find_stations_from_logstash(req.body.find, time, formatted_date).then(function (response) {
+            var hits = response;
+            res.json(stations_found_hour_logstash);
+        });
+    } else if(time == 24) {
+        find_stations_from_logstash_day(req.body.find, time, formatted_date).then(function (response) {
+            var hits = response;
+            res.json(stations_found_hour_logstash);
+        });
+    } else if(time == 168) {
+        find_stations_from_logstash_week(req.body.find, time, formatted_date).then(function (response) {
+            var hits = response;
+            res.json(stations_found_hour_logstash);
+        });
+    }
+    
 
 });
 
@@ -226,6 +250,42 @@ router.route('/stations/find').post((req, res) => {
         res.json({'stations_found': 'Added successfully'});
     });
  
+
+});
+
+// Route for piechart
+
+router.route('/places/find/piechart').post((req, res) => {
+
+    console.log("stations found" + stations_found);
+
+    var count_90=0;
+    var count_0=0;
+    piechart_info = [];
+    for (var i = 0,len = stations_found.length; i < len; i++) {
+
+        var dock_per = (stations_found[i].availableBikes/stations_found[i].totalDocks)*100
+        
+        if ( dock_per >= 90 || dock_per <= 10) { // strict equality test
+            count_90++;
+        } else {
+            count_0++;
+        }        
+    }
+
+    var dock = {
+        "dock": ">=90% or <=10%",
+        "pie": count_90
+    };
+    piechart_info.push(dock);
+    dock = {
+        "dock": "<90% or >10%",
+        "pie": count_0
+    };
+    piechart_info.push(dock);
+
+    res.json(piechart_info);
+   
 
 });
 
@@ -618,20 +678,22 @@ async function find_places_from_yelp(place, where, zipcode) {
 
 // A new async function to display realtime chart for 1 hr
 
-async function find_stations_from_logstash(stationName, time) {
+async function find_stations_from_logstash(stationName, time, req_date) {
 
     stations_found_hour_logstash =[];
     this.time = time;
-    if(time == "hour") {
-        query_val = stationName.lastCommunicationTime.substr(0,15);
+    if(time == 1) {
+        // query_val = stationName.lastCommunicationTime.substr(0,14);
         size="30";
         // x_axis=[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60];
-    } else if(time == "day") {
-        query_val = stationName.lastCommunicationTime.substr(0,11);
+    } else if(time == 24) {
+        // query_val = stationName.lastCommunicationTime.substr(0,11);
         size="720";
         // x_axis=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24];
-    } 
-    let body = 
+    } else if(time == 168) {
+        size="1440";
+    }
+    /* let body = 
     {
         "size": size,
         "from": "0",
@@ -653,6 +715,33 @@ async function find_stations_from_logstash(stationName, time) {
                         }
                     }
                 ]
+            }
+        }
+    }*/
+
+    let body = 
+    {
+        "size": size,
+        "from": "0",
+        "query": {
+            "bool": {
+                "must": {
+                    "match": {
+                        "stationName.keyword": stationName.stationName
+                    }
+                },
+                "filter": {
+                    "range": {
+                        "lastCommunicationTime.keyword": {
+                            "gte": req_date
+                        }
+                    }
+                }
+            }
+        },
+        "sort": {
+            "lastCommunicationTime.keyword": {
+                "order": "asc"
             }
         }
     }
@@ -681,12 +770,164 @@ async function find_stations_from_logstash(stationName, time) {
             "sma_30": sma_30,
             "sma_720": sma_720
         };
-
-        stations_found_hour_logstash.push(station);
+            stations_found_hour_logstash.push(station);
 
     });
 }
 
+// A new async function to display realtimechart for 24/7 days
+
+async function find_stations_from_logstash_day(stationName, time, req_date) {
+
+    stations_found_hour_logstash =[];
+    this.time = time
+    
+
+    let body = 
+    {
+        "size": "720",
+        "from": "0",
+        "query": {
+            "bool": {
+                "must": {
+                    "match": {
+                        "stationName.keyword": stationName.stationName
+                    }
+                },
+                "filter": {
+                    "range": {
+                        "lastCommunicationTime.keyword": {
+                            "gte": req_date
+                        }
+                    }
+                }
+            }
+        },
+        "sort": {
+            "lastCommunicationTime.keyword": {
+                "order": "asc"
+            }
+        }
+    }
+
+    results = await esClient.search({index: 'divvy_stations_logs', body: body});
+
+    sma_30_data = sma(30);
+    sma_720_data = sma(720);
+    count=0;
+    x_axis=0;
+    sum=0;
+    avg=0;
+    results.hits.hits.forEach((hit, index) => {
+        count = count+1;
+        sum = sum + hit._source.availableDocks;
+        avg = sum/count;
+        sma_30 = sma_30_data(hit._source.availableDocks)
+        sma_720 = sma_720_data(hit._source.availableDocks)
+        if(count == 30)
+        {
+            x_axis = x_axis+1;
+            var station = {
+                "id": hit._source.id,
+                "stationName": hit._source.stationName,
+                "availableBikes": hit._source.availableBikes,
+                "availableDocks": avg,
+                "is_renting": hit._source.is_renting,
+                "x_axis": x_axis,
+                "lastCommunicationTime": hit._source.lastCommunicationTime,
+                "latitude": hit._source.latitude,    
+                "longitude": hit._source.longitude,
+                "status": hit._source.status,
+                "totalDocks": hit._source.totalDocks,
+                "sma_30": sma_30,
+                "sma_720": sma_720
+            };
+            count = 0;
+            sum = 0;
+            avg = 0;
+                stations_found_hour_logstash.push(station);
+        }
+        
+
+    });
+}
+
+// A new async function to display realtimechart for 7 days
+
+async function find_stations_from_logstash_week(stationName, time, req_date) {
+
+    stations_found_hour_logstash =[];
+    this.time = time
+    
+
+    let body = 
+    {
+        "size": "1440",
+        "from": "0",
+        "query": {
+            "bool": {
+                "must": {
+                    "match": {
+                        "stationName.keyword": stationName.stationName
+                    }
+                },
+                "filter": {
+                    "range": {
+                        "lastCommunicationTime.keyword": {
+                            "gte": req_date
+                        }
+                    }
+                }
+            }
+        },
+        "sort": {
+            "lastCommunicationTime.keyword": {
+                "order": "asc"
+            }
+        }
+    }
+
+    results = await esClient.search({index: 'divvy_stations_logs', body: body});
+
+    sma_30_data = sma(30);
+    sma_720_data = sma(720);
+    count=0;
+    x_axis=0;
+    sum=0;
+    avg=0;
+    results.hits.hits.forEach((hit, index) => {
+        count = count+1;
+        sum = sum + hit._source.availableDocks;
+        avg = sum/count;
+        sma_30 = sma_30_data(hit._source.availableDocks)
+        sma_720 = sma_720_data(hit._source.availableDocks)
+        if(count == 205)
+        {
+            x_axis = x_axis+1;
+            var station = {
+                "id": hit._source.id,
+                "stationName": hit._source.stationName,
+                "availableBikes": hit._source.availableBikes,
+                "availableDocks": avg,
+                "is_renting": hit._source.is_renting,
+                "x_axis": x_axis,
+                "lastCommunicationTime": hit._source.lastCommunicationTime,
+                "latitude": hit._source.latitude,    
+                "longitude": hit._source.longitude,
+                "status": hit._source.status,
+                "totalDocks": hit._source.totalDocks,
+                "sma_30": sma_30,
+                "sma_720": sma_720
+            };
+            count = 0;
+            sum = 0;
+            avg = 0;
+                stations_found_hour_logstash.push(station);
+        }
+        
+
+    });
+}
 
 app.use('/', router);
 
