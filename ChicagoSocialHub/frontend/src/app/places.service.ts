@@ -62,6 +62,10 @@ export class PlacesService {
     return this.http.get(`${this.uri}/stations`);
   }
 
+  getAllStationsLatLong() {
+    return this.http.get(`${this.uri}/all_stations`);
+  }
+
   getStations_Hour_Old() {
     return this.http.get(`${this.uri}/stations/hourOldData`);
   }

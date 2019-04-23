@@ -21,7 +21,7 @@ import { FormsModule } from '@angular/forms';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { AgmCoreModule, GoogleMapsAPIWrapper } from '@agm/core';
 
-import { MatToolbarModule, MatFormFieldModule, MatInputModule, MatOptionModule, MatSelectModule, MatIconModule, 
+import { MatToolbarModule, MatFormFieldModule, MatInputModule, MatOptionModule, MatSelectModule, MatIconModule,
   MatButtonModule, MatCardModule, MatTableModule, MatDividerModule, MatSnackBarModule, MatCheckboxModule } from '@angular/material';
 
 import { AppComponent } from './app.component';
@@ -41,6 +41,8 @@ import { LineChartWeekDivvyComponent } from './components/line-chart-week-divvy/
 import { SmaLineChartDivvyComponent } from './components/sma-line-chart-divvy/sma-line-chart-divvy.component';
 import { DasboardDisplayComponent } from './components/dasboard-display/dasboard-display.component';
 import { PieChartDivvyComponent } from './components/pie-chart-divvy/pie-chart-divvy.component';
+import { HomepageComponent } from './components/homepage/homepage.component';
+import { HeatmapDivvyComponent } from './components/heatmap-divvy/heatmap-divvy.component';
 
 
 
@@ -57,8 +59,10 @@ const routes: Routes = [
   { path: 'sma-line-chart-divvy', component: SmaLineChartDivvyComponent},
   { path: 'dashboard', component: DasboardDisplayComponent},
   { path: 'pie-chart-divvy', component: PieChartDivvyComponent},
+  { path: 'homepage', component: HomepageComponent},
+  { path: 'heatmap-divvy', component: HeatmapDivvyComponent},
 
-  { path: '', redirectTo: 'find', pathMatch: 'full'}
+  { path: '', redirectTo: 'homepage', pathMatch: 'full'}
 ];
 
 @NgModule({
@@ -75,6 +79,8 @@ const routes: Routes = [
     SmaLineChartDivvyComponent,
     DasboardDisplayComponent,
     PieChartDivvyComponent,
+    HomepageComponent,
+    HeatmapDivvyComponent,
   ],
   imports: [
     BrowserModule,
@@ -95,7 +101,7 @@ const routes: Routes = [
     MatSnackBarModule,
     MatCheckboxModule,
 
-/////////////////////////////////////////////////////////////////////////////////////    
+/////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////// SETUP NEEDED ////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////
 
@@ -109,7 +115,7 @@ const routes: Routes = [
 /////////////////////////////////////////////////////////////////////////////////////
 
 
-    AgmCoreModule.forRoot({apiKey: 'AIzaSyB-M3eYX7THgY3KeZ0SaeBdd1g9hv9b-lw'}),
+    AgmCoreModule.forRoot({apiKey: 'AIzaSyB-M3eYX7THgY3KeZ0SaeBdd1g9hv9b-lw' + '&libraries=visualization'}),
     FormsModule,
     NgbModule
   ],

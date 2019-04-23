@@ -19,6 +19,7 @@ import { Router } from '@angular/router';
 import { MatTableDataSource } from '@angular/material';
 
 import { Station } from '../../station';
+import { Location } from '../../location';
 import { PlacesService } from '../../places.service';
 
 
@@ -29,21 +30,6 @@ import { Place } from 'src/app/place';
 
 
 
-
-interface Location {
-  lat: number;
-  lng: number;
-  zoom: number;
-  address_level_1?: string;
-  address_level_2?: string;
-  address_country?: string;
-  address_zip?: string;
-  address_state?: string;
-  label: string;
-}
-
-
-
 @Component({
   selector: 'app-list-of-stations',
   templateUrl: './list-of-stations.component.html',
@@ -51,7 +37,7 @@ interface Location {
 })
 export class ListOfStationsComponent implements OnInit {
 
-  
+
   circleRadius = 3000; // km
 
   public location: Location = {

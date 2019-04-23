@@ -106,6 +106,7 @@ var stations_found_hour_logstash = [];
 var place_selected;
 var station_selected;
 var time;
+var all_stations;
 
 
 
@@ -143,6 +144,16 @@ router.route('/stations').get((req, res) => {
    
     res.json(stations_found)
            
+});
+
+router.route('/all_stations').get((req, res) => {
+    // Get all the stations in city of chicago
+    date = new Date();
+    var formatted_date = moment(date.setHours(date.getHours() - 1)).format('YYYY-MM-DD HH:mm:ss');
+        // console.log(moment(date.setHours(date.getHours() - 1)).format('YYYY-MM-DD HH:mm:ss'));
+    getall_station_latlang_chicago(formatted_date).then(function (response) {
+        res.json(all_stations);
+    });
 });
 
 // Get hour old data from server
@@ -927,6 +938,60 @@ async function find_stations_from_logstash_week(stationName, time, req_date) {
         
 
     });
+}
+
+async function getall_station_latlang_chicago(req_date) {
+
+    all_stations =[];
+    
+
+    let body = 
+    {
+        "size": "1000",
+        "from": "0",
+        "query": {
+            "bool": {
+                "must": [
+                    {
+                        "term": {
+                            "city.keyword": "Chicago"
+                        }
+                    },
+                    {
+                        "range": {
+                            "lastCommunicationTime.keyword": {
+                                "gte": req_date
+                            }
+                        }
+                    },
+                    {
+                        "range": {
+                            "availableDocks": {
+                                "gte": 1
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "sort": {
+            "lastCommunicationTime.keyword": {
+                "order": "asc"
+            }
+        }
+    }
+
+    results = await esClient.search({index: 'divvy_stations_logs', body: body});
+
+    results.hits.hits.forEach((hit, index) => {
+
+            var latlang = {
+                "latitude": hit._source.latitude,    
+                "longitude": hit._source.longitude,
+            };
+
+            all_stations.push(latlang);
+        });
 }
 
 app.use('/', router);
