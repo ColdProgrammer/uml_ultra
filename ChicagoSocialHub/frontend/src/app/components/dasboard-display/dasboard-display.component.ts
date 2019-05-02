@@ -1,4 +1,6 @@
 import { Component, ViewEncapsulation, OnInit } from '@angular/core';
+import {NgModule, VERSION,Inject, ViewChild, ElementRef } from '@angular/core'
+import {BrowserModule, DOCUMENT} from '@angular/platform-browser'
 import { ActivatedRoute, Router } from '@angular/router';
 import {Location} from '@angular/common';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -26,6 +28,8 @@ export class DasboardDisplayComponent implements OnInit {
   private margin = {top: 20, right: 20, bottom: 30, left: 50};
   private width: number;
   private location: Location;
+  private hide_30 = false;
+  private hide_720 = false;
   private height: number;
   private x: any;
   private y: any;
@@ -83,16 +87,46 @@ export class DasboardDisplayComponent implements OnInit {
   }
 
   plotSMA30() {
-    console.log('checkbox 30 onClick works!!!');
     if (this.check_sma_30 === false) {
-        // Plot SMA30
-        const	valueline  = d3Shape.line()
-                                  .x( (d: any) => this.x(d.x_axis.toString()) )
-                                  .y( (d: any) => this.y(d.sma_30) );
-        this.svg.append('path')
-                .datum(this.stations)
-                .attr('class', 'line-sma')
-                .attr('d', valueline);
+      console.log('checkbox 30 chedin');
+      // Plot SMA30
+      this.hide_30 = false;
+      const	valueline  = d3Shape.line()
+                                .x( (d: any) => this.x(d.x_axis.toString()) )
+                                .y( (d: any) => this.y(d.sma_30) );
+      this.svg.append('path')
+              .datum(this.stations)
+              .attr('class', 'line-sma-30')
+              .attr('ng-hide', this.hide_30)
+              .attr('d', valueline);
+    } else if (this.check_sma_30 === true) {
+      console.log('checkbox 30 checkedout');
+        // Remove SMA 30 plot
+        var iEl = d3.select('.line-sma-30');
+        iEl.remove();
+        this.hide_30 = true;
+    }
+  }
+
+  plotSMA720() {
+    if (this.check_sma_720 === false) {
+      console.log('checkbox 720 chedin');
+      // Plot SMA30
+      this.hide_720 = false;
+      const	valueline  = d3Shape.line()
+                                .x( (d: any) => this.x(d.x_axis.toString()) )
+                                .y( (d: any) => this.y(d.sma_720) );
+      this.svg.append('path')
+              .datum(this.stations)
+              .attr('class', 'line-sma-720')
+              .attr('ng-hide', this.hide_720)
+              .attr('d', valueline);
+    } else if (this.check_sma_720 === true) {
+      console.log('checkbox 720 checkedout');
+        // Remove SMA 30 plot
+        var iEl = d3.select('.line-sma-720');
+        iEl.remove();
+        this.hide_720 = true;
     }
   }
   /////////////////////////////////////// functions for line chart/////////////////////////////////////////////////////////

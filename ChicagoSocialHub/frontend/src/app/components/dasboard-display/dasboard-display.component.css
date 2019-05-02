@@ -26,8 +26,14 @@
     stroke-width: 1.5px;
 }
 
-.line-sma {
+.line-sma-30 {
     fill: none;
     stroke: red;
+    stroke-width: 1.5px;
+}
+
+.line-sma-720{
+    fill: none;
+    stroke: blue;
     stroke-width: 1.5px;
 }
