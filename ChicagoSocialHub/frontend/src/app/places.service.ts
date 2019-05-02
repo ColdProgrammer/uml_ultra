@@ -62,9 +62,7 @@ export class PlacesService {
     return this.http.get(`${this.uri}/stations`);
   }
 
-  getAllStationsLatLong() {
-    return this.http.get(`${this.uri}/all_stations`);
-  }
+  
 
   getStations_Hour_Old() {
     return this.http.get(`${this.uri}/stations/hourOldData`);
@@ -84,6 +82,22 @@ export class PlacesService {
 
   getStations_PieChart() {
     return this.http.get(`${this.uri}/stations/piechart`);
+  }
+
+  getAllStationsLatLong() {
+    // Get the most recent data from server for logstash
+    // const find_stations_at = {
+    //   time: time
+    // };
+    return this.http.get(`${this.uri}/all_stations/data`);
+  }
+
+  findAllStationsLatLong(time) {
+    // Get the most recent data from server for logstash
+    const find_stations_at = {
+      time: time
+    };
+    return this.http.post(`${this.uri}/all_stations`, find_stations_at, httpOptions);
   }
 
   findPlaces(find, where, zipcode) {

@@ -25,3 +25,9 @@
     stroke: green;
     stroke-width: 1.5px;
 }
+
+.line-sma {
+    fill: none;
+    stroke: red;
+    stroke-width: 1.5px;
+}

@@ -1,8 +1,24 @@
-<button mat-raised-button color="primary" (click)= "toggle_map()" >
-    View HeatMap
-    &nbsp; &nbsp; &nbsp;
-    <mat-icon>pie_chart</mat-icon>
-</button>
-  
+<br>
+<mat-card>
+  <mat-card-content>
+        <section>
+            &nbsp; &nbsp; &nbsp;
+            <mat-form-field>
+                <mat-label>Time Range</mat-label>
+                <mat-select [(value)]="selected">
+                    <mat-option selected="selected" value="option1" (click)="changeHeatMap(1)">Hourly HeatMap</mat-option>
+                    <mat-option  value="option2" (click)="changeHeatMap(24)">24 Hour HeatMap</mat-option>
+                    <mat-option value="option3" (click)="changeHeatMap(168)">7 days HeatMap</mat-option>
+                </mat-select>
+            </mat-form-field>
+            &nbsp; &nbsp; &nbsp;
+            <button mat-raised-button color="primary" routerLink="/homepage">
+                Back
+                &nbsp; &nbsp;
+                <mat-icon>keyboard_return</mat-icon>    
+            </button> 
+        </section>
+    </mat-card-content>
+</mat-card>
 <agm-map [(latitude)]="location.lat" [(longitude)]="location.lng" [(zoom)]="location.zoom" [disableDefaultUI]="true" [zoomControl]="true" (mapReady)="onMapLoad($event)">
 </agm-map>

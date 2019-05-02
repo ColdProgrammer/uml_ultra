@@ -31,6 +31,8 @@ export class DasboardDisplayComponent implements OnInit {
   private y: any;
   private svg: any;
   private line: d3Shape.Line<[number, number]>;
+  check_sma_30 = false;
+  check_sma_720 = false;
 
   constructor(private placesService: PlacesService, private router: Router) {
     this.width = 900 - this.margin.left - this.margin.right;
@@ -74,6 +76,25 @@ export class DasboardDisplayComponent implements OnInit {
       });
   }
 
+  plotPieChart(){
+    this.placesService.findPieChart().subscribe(() => {
+      this.router.navigate(['/pie-chart-divvy']);
+      });
+  }
+
+  plotSMA30() {
+    console.log('checkbox 30 onClick works!!!');
+    if (this.check_sma_30 === false) {
+        // Plot SMA30
+        const	valueline  = d3Shape.line()
+                                  .x( (d: any) => this.x(d.x_axis.toString()) )
+                                  .y( (d: any) => this.y(d.sma_30) );
+        this.svg.append('path')
+                .datum(this.stations)
+                .attr('class', 'line-sma')
+                .attr('d', valueline);
+    }
+  }
   /////////////////////////////////////// functions for line chart/////////////////////////////////////////////////////////
 
   private initSvg() {
@@ -125,9 +146,4 @@ export class DasboardDisplayComponent implements OnInit {
         .attr('d', this.line);
   }
 
-  plotPieChart(){
-    this.placesService.findPieChart().subscribe(() => {
-      this.router.navigate(['/pie-chart-divvy']);
-      });
-  }
 }

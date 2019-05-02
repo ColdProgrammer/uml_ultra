@@ -146,10 +146,16 @@ router.route('/stations').get((req, res) => {
            
 });
 
-router.route('/all_stations').get((req, res) => {
+router.route('/all_stations/data').post((req, res) => {
+    // Get all the stations in city of chicago
+        res.json(all_stations);
+});
+
+router.route('/all_stations').post((req, res) => {
     // Get all the stations in city of chicago
     date = new Date();
-    var formatted_date = moment(date.setHours(date.getHours() - 1)).format('YYYY-MM-DD HH:mm:ss');
+    console.log(req.body.time);
+    var formatted_date = moment(date.setHours(date.getHours() - req.body.time)).format('YYYY-MM-DD HH:mm:ss');
         // console.log(moment(date.setHours(date.getHours() - 1)).format('YYYY-MM-DD HH:mm:ss'));
     getall_station_latlang_chicago(formatted_date).then(function (response) {
         res.json(all_stations);
@@ -697,39 +703,7 @@ async function find_stations_from_logstash(stationName, time, req_date) {
         // query_val = stationName.lastCommunicationTime.substr(0,14);
         size="30";
         // x_axis=[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60];
-    } else if(time == 24) {
-        // query_val = stationName.lastCommunicationTime.substr(0,11);
-        size="720";
-        // x_axis=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24];
-    } else if(time == 168) {
-        size="1440";
     }
-    /* let body = 
-    {
-        "size": size,
-        "from": "0",
-        "query": {
-            "bool": {
-                "should": [
-                    {
-                        "match_phrase": {
-                            "stationName": {
-                                "query": stationName.stationName
-                            }
-                        }
-                    },
-                    {
-                        "match_phrase_prefix": {
-                            "lastCommunicationTime": {
-                                "query": query_val
-                            }
-                        }
-                    }
-                ]
-            }
-        }
-    }*/
-
     let body = 
     {
         "size": size,
@@ -947,7 +921,7 @@ async function getall_station_latlang_chicago(req_date) {
 
     let body = 
     {
-        "size": "1000",
+        "size": "2000",
         "from": "0",
         "query": {
             "bool": {
