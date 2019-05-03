@@ -706,7 +706,7 @@ async function find_stations_from_logstash(stationName, time, req_date) {
     }
     let body = 
     {
-        "size": size,
+        "size": size,   
         "from": "0",
         "query": {
             "bool": {
@@ -737,16 +737,17 @@ async function find_stations_from_logstash(stationName, time, req_date) {
     sma_720_data = sma(720);
     count=0;
     results.hits.hits.forEach((hit, index) => {
-        count = count+2;
-        sma_30 = sma_30_data(hit._source.availableDocks)
-        sma_720 = sma_720_data(hit._source.availableDocks)
+        count = count+1;
+        // console.log(moment(hit._source.lastCommunicationTime).format('hh:mm:ss a'))
+        sma_30 = sma_30_data(hit._source.availableDocks);
+        sma_720 = sma_720_data(hit._source.availableDocks);
         var station = {
             "id": hit._source.id,
             "stationName": hit._source.stationName,
             "availableBikes": hit._source.availableBikes,
             "availableDocks": hit._source.availableDocks,
             "is_renting": hit._source.is_renting,
-            "x_axis": count,
+            "x_axis": moment(hit._source.lastCommunicationTime).format('hh:mm a'),
             "lastCommunicationTime": hit._source.lastCommunicationTime,
             "latitude": hit._source.latitude,    
             "longitude": hit._source.longitude,
@@ -770,7 +771,7 @@ async function find_stations_from_logstash_day(stationName, time, req_date) {
 
     let body = 
     {
-        "size": "720",
+        "size": "1000",
         "from": "0",
         "query": {
             "bool": {
@@ -804,11 +805,12 @@ async function find_stations_from_logstash_day(stationName, time, req_date) {
     sum=0;
     avg=0;
     results.hits.hits.forEach((hit, index) => {
+        
         count = count+1;
         sum = sum + hit._source.availableDocks;
         avg = sum/count;
-        sma_30 = sma_30_data(hit._source.availableDocks)
-        sma_720 = sma_720_data(hit._source.availableDocks)
+        sma_30 = sma_30_data(hit._source.availableDocks);
+        sma_720 = sma_720_data(hit._source.availableDocks);
         if(count == 30)
         {
             x_axis = x_axis+1;
@@ -818,7 +820,7 @@ async function find_stations_from_logstash_day(stationName, time, req_date) {
                 "availableBikes": hit._source.availableBikes,
                 "availableDocks": avg,
                 "is_renting": hit._source.is_renting,
-                "x_axis": x_axis,
+                "x_axis": moment(hit._source.lastCommunicationTime).startOf('hour').format('hh:mm a'),
                 "lastCommunicationTime": hit._source.lastCommunicationTime,
                 "latitude": hit._source.latitude,    
                 "longitude": hit._source.longitude,
@@ -884,8 +886,8 @@ async function find_stations_from_logstash_week(stationName, time, req_date) {
         count = count+1;
         sum = sum + hit._source.availableDocks;
         avg = sum/count;
-        sma_30 = sma_30_data(hit._source.availableDocks)
-        sma_720 = sma_720_data(hit._source.availableDocks)
+        sma_30 = sma_30_data(hit._source.availableDocks);
+        sma_720 = sma_720_data(hit._source.availableDocks);
         if(count == 205)
         {
             x_axis = x_axis+1;
@@ -895,7 +897,7 @@ async function find_stations_from_logstash_week(stationName, time, req_date) {
                 "availableBikes": hit._source.availableBikes,
                 "availableDocks": avg,
                 "is_renting": hit._source.is_renting,
-                "x_axis": x_axis,
+                "x_axis": moment(hit._source.lastCommunicationTime).format('YYYY-MM-DD'),
                 "lastCommunicationTime": hit._source.lastCommunicationTime,
                 "latitude": hit._source.latitude,    
                 "longitude": hit._source.longitude,
@@ -963,7 +965,6 @@ async function getall_station_latlang_chicago(req_date) {
                 "latitude": hit._source.latitude,    
                 "longitude": hit._source.longitude,
             };
-
             all_stations.push(latlang);
         });
 }

@@ -39,7 +39,7 @@ export class DasboardDisplayComponent implements OnInit {
   check_sma_720 = false;
 
   constructor(private placesService: PlacesService, private router: Router) {
-    this.width = 900 - this.margin.left - this.margin.right;
+    this.width = 1200 - this.margin.left - this.margin.right;
     this.height = 500 - this.margin.top - this.margin.bottom;
   }
 
@@ -80,7 +80,7 @@ export class DasboardDisplayComponent implements OnInit {
       });
   }
 
-  plotPieChart(){
+  plotPieChart() {
     this.placesService.findPieChart().subscribe(() => {
       this.router.navigate(['/pie-chart-divvy']);
       });
@@ -144,8 +144,11 @@ export class DasboardDisplayComponent implements OnInit {
     this.y = d3Scale.scaleLinear().range([this.height, 0]);
     this.x.domain(data.map((d) => d.x_axis.toString())); // takes data
     console.log(data.map((d) => d.x_axis.toString()));
-    this.y.domain(d3Array.extent(data, (d) => d.availableDocks ));
-    console.log(d3Array.extent(data, (d) => d.availableDocks ));
+    this.y.domain([0, d3Array.max(this.stations, function(d) {
+      return Math.max( parseInt(d.sma_30.toString(), 10), parseInt(d.sma_720.toString(), 10), parseInt(d.availableDocks.toString(), 10));
+    })]);
+    // this.y.domain(d3Array.extent(data, (d) => d.availableDocks ));
+    // console.log(d3Array.extent(data, (d) => d.availableDocks ));
   }
 
   private drawAxis() {
