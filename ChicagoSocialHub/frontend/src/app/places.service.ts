@@ -168,7 +168,7 @@ export class PlacesService {
   }
 
   getUpdates() {
-    console.log('inside service');
+    // console.log('inside service');
     const socket = socketio(this.listuri);
     let station;
     const stationSubObservable = from(station);

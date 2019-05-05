@@ -38,7 +38,7 @@ export class AlertTableComponent implements OnInit, OnDestroy {
   }
 
   delay(ms: number) {
-    console.log('In delay');
+    // console.log('In delay');
     return new Promise( resolve => setTimeout(resolve, ms) );
   }
 }

@@ -32,21 +32,24 @@ export class PieChartDivvyComponent implements OnInit {
     this.radius = Math.min(this.width, this.height) / 2;
   }
 
+  // This function is called when the program is initalized
   ngOnInit() {
     this.fetchStations();
   }
 
+  // This function fetches the data for piechart
   fetchStations() {
     this.placesService
       .getStations_PieChart()
       .subscribe((data: Station[]) => {
         this.stations = data;
-        console.log(data);
+        // console.log(data);
         this.initSvg(this.stations);
         this.drawPie(this.stations);
       });
   }
 
+  // This function initializes the svg component
   private initSvg(data) {
     this.color = d3Scale.scaleOrdinal()
         .range(['#98abc5', '#8a89a6', '#7b6888', '#6b486b', '#a05d56', '#d0743c', '#ff8c00']);
@@ -64,6 +67,7 @@ export class PieChartDivvyComponent implements OnInit {
         .attr('transform', 'translate(' + this.width / 2 + ',' + this.height / 2 + ')');
   }
 
+  // This function draws the piechart
   private drawPie(data) {
       const g = this.svg.selectAll('.arc')
           .data(this.pie(data))

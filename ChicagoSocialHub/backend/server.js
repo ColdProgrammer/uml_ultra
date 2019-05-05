@@ -158,7 +158,7 @@ router.route('/all_stations').post((req, res) => {
     date = new Date();
     console.log(req.body.time);
     var formatted_date = moment(date.setHours(date.getHours() - req.body.time)).format('YYYY-MM-DD HH:mm:ss');
-    // console.log(moment(date.setHours(date.getHours() - 1)).format('YYYY-MM-DD HH:mm:ss'));
+    console.log(moment(date.setHours(date.getHours() - 1)).format('YYYY-MM-DD HH:mm:ss'));
     getall_station_latlang_chicago(formatted_date).then(function (response) {
         res.json(all_stations);
     });
@@ -662,7 +662,7 @@ async function find_stations_from_logstash(stationName, time, req_date) {
     results.hits.hits.forEach((hit, index) => {
         count = count+1;
         var b = moment(hit._source.lastCommunicationTime).format('hh:mm a');
-        // console.log(moment(hit._source.lastCommunicationTime).format('hh:mm:ss a'))
+        console.log(moment(hit._source.lastCommunicationTime).format('hh:mm:ss a'))
         sma_30 = sma_30_data(hit._source.availableDocks);
         sma_720 = sma_720_data(hit._source.availableDocks);
         var station = {

@@ -41,19 +41,14 @@ export class FindComponent implements OnInit {
     });
   }
 
-  findPlaces() {
-    console.log(this.createForm.value);
-    this.placesService.findPlaces(this.createForm.value.find, this.createForm.value.where, this.createForm.value.zipcode).subscribe(() => {
-
-      this.router.navigate(['/list_of_places']);
-
-    });
-
-
-  }
-
-
   ngOnInit() {
   }
 
+  // This function calls server.js to find places in yelp.
+  findPlaces() {
+    // console.log(this.createForm.value);
+    this.placesService.findPlaces(this.createForm.value.find, this.createForm.value.where, this.createForm.value.zipcode).subscribe(() => {
+      this.router.navigate(['/list_of_places']);
+    });
+  }
 }

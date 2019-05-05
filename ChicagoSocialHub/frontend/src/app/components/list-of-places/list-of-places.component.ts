@@ -15,16 +15,10 @@
 
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { MatTableDataSource } from '@angular/material';
-
-
 import { HttpClient } from '@angular/common/http';
 import { HttpHeaders } from '@angular/common/http';
-
 import { Observable, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
-
-
 import { Place } from '../../place';
 import { PlacesService } from '../../places.service';
 
@@ -54,16 +48,12 @@ export class ListOfPlacesComponent implements OnInit {
 
   constructor(private placesService: PlacesService, private router: Router, private http: HttpClient) { }
 
+  // This function is called when the function initalizes.
   ngOnInit() {
-
     this.fetchPlaces();
-
   }
 
-
-
-
-
+  // This function fetches the data for place selected.
   fetchPlaces() {
     this.placesService
       .getPlaces()
@@ -72,11 +62,8 @@ export class ListOfPlacesComponent implements OnInit {
       });
   }
 
-
-
-
+  // This function is called when divvy nearby button is clicked.
   findStations(placeName) {
-
     let place_selected = null;
     for (let i = 0, len = this.places.length; i < len; i++) {
       if ( this.places[i].name === placeName ) { // strict equality test
@@ -84,14 +71,8 @@ export class ListOfPlacesComponent implements OnInit {
           break;
       }
     }
-
-
     this.placesService.findStations(place_selected).subscribe(() => {
       this.router.navigate(['/list_of_stations']);
     });
-
   }
-
-
-
 }
