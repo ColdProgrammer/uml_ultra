@@ -21,6 +21,12 @@
             <mat-icon>pie_chart</mat-icon>
           </button>
           &nbsp; &nbsp; &nbsp;
+          <button mat-raised-button color="primary" (click)= "goToAlertTable()">
+            Alert Table
+            &nbsp; &nbsp; 
+            <mat-icon>notification_important</mat-icon>    
+          </button>
+          &nbsp; &nbsp; &nbsp;
           <button mat-raised-button color="primary" routerLink="/list_of_stations">
             Back
             &nbsp; &nbsp; 
@@ -45,6 +51,8 @@
     </mat-card-content>
   </mat-card>
 </div>
+<!-- <div><code>observable|async</code>:
+  Time: {{ timeing | async }}</div> -->
 <div>
   <h2>{{ title }}</h2>
   <svg width="1200" height="500" id="line-chart"></svg>

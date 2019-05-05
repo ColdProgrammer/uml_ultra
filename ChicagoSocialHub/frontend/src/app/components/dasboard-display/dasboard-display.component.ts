@@ -1,15 +1,20 @@
-import { Component, ViewEncapsulation, OnInit } from '@angular/core';
-import {NgModule, VERSION,Inject, ViewChild, ElementRef } from '@angular/core'
-import {BrowserModule, DOCUMENT} from '@angular/platform-browser'
+import { Component, ViewEncapsulation, OnInit, OnDestroy } from '@angular/core';
+import {NgModule, VERSION, Inject, ViewChild, ElementRef } from '@angular/core';
+import {BrowserModule, DOCUMENT} from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import {Location} from '@angular/common';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import * as d3 from 'd3-selection';
+import * as d3Transition from 'd3-transition';
 import * as d3Scale from 'd3-scale';
+import {Selection, select } from 'd3-selection';
+import {transition} from 'd3-transition';
 import * as d3ScaleChromatic from 'd3-scale-chromatic';
 import * as d3Shape from 'd3-shape';
 import * as d3Array from 'd3-array';
 import * as d3Axis from 'd3-axis';
+import { delay } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 import { Station } from '../../station';
 import { PlacesService } from '../../places.service';
@@ -21,7 +26,7 @@ import { PlacesService } from '../../places.service';
   styleUrls: ['./dasboard-display.component.css']
 })
 
-export class DasboardDisplayComponent implements OnInit {
+export class DasboardDisplayComponent implements OnInit, OnDestroy {
 
   title = 'Line Charts';
   stations: Station[];
@@ -29,8 +34,10 @@ export class DasboardDisplayComponent implements OnInit {
   private width: number;
   private location: Location;
   private hide_30 = false;
+  private time = 1;
   private hide_720 = false;
   private height: number;
+  private place_selected = null;
   private x: any;
   private y: any;
   private svg: any;
@@ -45,13 +52,29 @@ export class DasboardDisplayComponent implements OnInit {
 
   ngOnInit() {
     this.fetchStations();
+    // setInterval(() => {
+    //   console.log('Hi!');
+    //   console.log(this.place_selected);
+    //   console.log(this.time);
+
+    //   this.placesService.findStationLogstash(this.place_selected, this.time).subscribe(() => {
+    //     this.fetchStations();
+    //     });
+    //    }, 3000);
+  }
+
+  ngOnDestroy() {
+    if (this.delay) {
+      this.delay = null;
+    }
   }
 
   fetchStations() {
     this.placesService
       .getStations_Logstash()
-      .subscribe((data: Station[]) => {
+      .subscribe(async (data: Station[]) => {
         this.stations = data;
+        this.place_selected =  this.stations[0];
         console.log(data);
         this.initSvg();
         this.initAxis(this.stations);
@@ -60,23 +83,36 @@ export class DasboardDisplayComponent implements OnInit {
         this.drawLine(this.stations);
         // this.drawAxis();
         // this.drawPath();
+        if (this.time == 1) {
+          await this.delay(180000);
+          if (this.time == 1) {
+            this.placesService.findStationLogstash(this.place_selected, this.time).subscribe(() => {
+              this.check_sma_30 = false;
+              this.check_sma_720 = false;
+              this.fetchStations();
+              });
+            }
+        }
       });
   }
 
   // Function to plot graphs according to time range
   plotLineHour(time) {
     // This function is called when one clicks on Dropdown time range
+    this.time = time;
     console.log('placeName');
     console.log(this.stations);
-    let place_selected = null;
-        place_selected =  this.stations[0];
-    console.log(place_selected);
-    this.placesService.findStationLogstash(place_selected, time).subscribe(() => {
+    this.place_selected =  this.stations[0];
+    console.log(this.place_selected);
+    this.placesService.findStationLogstash(this.place_selected, time).subscribe(() => {
       // this.router.navigate(['/dashboard', { time: time}]);
-    // this.fetchStations();
-    // const a = this.location.path();
-    this.router.navigateByUrl('/find', {skipLocationChange: true}).then(() =>
-    this.router.navigate(['/dashboard']));
+      // this.fetchStations();
+      // const a = this.location.path();
+      // this.router.navigateByUrl('/find', {skipLocationChange: true}).then(() =>
+      // this.router.navigate(['/dashboard']));
+      this.check_sma_30 = false;
+      this.check_sma_720 = false;
+      this.fetchStations();
       });
   }
 
@@ -86,7 +122,14 @@ export class DasboardDisplayComponent implements OnInit {
       });
   }
 
+  delay(ms: number) {
+    console.log('In delay');
+    return new Promise( resolve => setTimeout(resolve, ms) );
+  }
+
   plotSMA30() {
+    // var timeing = new Observable(observer => setInterval(() => observer.next(new Date().toString()), 1000));
+    // console.log(timeing);
     if (this.check_sma_30 === false) {
       console.log('checkbox 30 chedin');
       // Plot SMA30
@@ -102,7 +145,7 @@ export class DasboardDisplayComponent implements OnInit {
     } else if (this.check_sma_30 === true) {
       console.log('checkbox 30 checkedout');
         // Remove SMA 30 plot
-        var iEl = d3.select('.line-sma-30');
+        const iEl = d3.select('.line-sma-30');
         iEl.remove();
         this.hide_30 = true;
     }
@@ -124,15 +167,24 @@ export class DasboardDisplayComponent implements OnInit {
     } else if (this.check_sma_720 === true) {
       console.log('checkbox 720 checkedout');
         // Remove SMA 30 plot
-        var iEl = d3.select('.line-sma-720');
+        const iEl = d3.select('.line-sma-720');
         iEl.remove();
         this.hide_720 = true;
     }
+  }
+
+  goToAlertTable() {
+    // When the button alert table is called
+    this.placesService.findPieChart().subscribe(() => {
+      this.router.navigate(['/alert-table']);
+      });
   }
   /////////////////////////////////////// functions for line chart/////////////////////////////////////////////////////////
 
   private initSvg() {
     console.log('inside initSVG');
+    const iEl = d3.select('g');
+        iEl.remove();
     this.svg = d3.select('#line-chart')
         .append('g')
         .attr('transform', 'translate(' + this.margin.left + ',' + this.margin.top + ')');

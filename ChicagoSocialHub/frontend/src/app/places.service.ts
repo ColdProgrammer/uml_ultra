@@ -62,8 +62,6 @@ export class PlacesService {
     return this.http.get(`${this.uri}/stations`);
   }
 
-  
-
   getStations_Hour_Old() {
     return this.http.get(`${this.uri}/stations/hourOldData`);
   }
@@ -92,6 +90,13 @@ export class PlacesService {
     return this.http.get(`${this.uri}/all_stations/data`);
   }
 
+  findAllStationDock() {
+    const find_station_at = {
+      find: '',
+      where: ''
+    };
+    return this.http.post(`${this.uri}/all_stations/dock`, find_station_at, httpOptions);
+  }
   findAllStationsLatLong(time) {
     // Get the most recent data from server for logstash
     const find_stations_at = {

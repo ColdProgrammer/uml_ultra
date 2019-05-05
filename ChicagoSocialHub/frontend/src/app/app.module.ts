@@ -43,6 +43,7 @@ import { DasboardDisplayComponent } from './components/dasboard-display/dasboard
 import { PieChartDivvyComponent } from './components/pie-chart-divvy/pie-chart-divvy.component';
 import { HomepageComponent } from './components/homepage/homepage.component';
 import { HeatmapDivvyComponent } from './components/heatmap-divvy/heatmap-divvy.component';
+import { AlertTableComponent } from './components/alert-table/alert-table.component';
 
 
 
@@ -61,6 +62,7 @@ const routes: Routes = [
   { path: 'pie-chart-divvy', component: PieChartDivvyComponent},
   { path: 'homepage', component: HomepageComponent},
   { path: 'heatmap-divvy', component: HeatmapDivvyComponent},
+  { path: 'alert-table', component: AlertTableComponent},
 
   { path: '', redirectTo: 'homepage', pathMatch: 'full'}
 ];
@@ -81,6 +83,7 @@ const routes: Routes = [
     PieChartDivvyComponent,
     HomepageComponent,
     HeatmapDivvyComponent,
+    AlertTableComponent,
   ],
   imports: [
     BrowserModule,

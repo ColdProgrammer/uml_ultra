@@ -1,0 +1,9 @@
+table {
+    width: 100%;
+}
+
+.mat-column-right {
+    text-align: center;
+}
+
+table tr:nth-child(even){background-color: #f2f2f2;}

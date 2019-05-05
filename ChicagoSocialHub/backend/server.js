@@ -5,7 +5,7 @@
 /// This file and the source code provided can be used only for   
 /// the projects and assignments of this course
 
-/// Last Edit by Srajan: 04/14/2019
+/// Last Edit by Srajan: 05/05/2019
 
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -30,6 +30,7 @@
 //      3. npm install pg-format
 //      4. npm install moment --save
 //      5. npm install elasticsearch
+//      6. npm install socket.io
 
 
 //  Read the docs for the following packages:
@@ -68,7 +69,6 @@ const esClient = new elasticsearch.Client({
   log: 'error'
 });
 
-
 // Connect to PostgreSQL server
 
 var conString = "pg://postgres:root@127.0.0.1:5432/chicago_divvy_stations";
@@ -76,7 +76,6 @@ var pgClient = new pg.Client(conString);
 pgClient.connect();
 
 var find_places_task_completed = false;             
-
 
 const app = express();
 const router = express.Router(); // This is where we declare routes for express
@@ -103,6 +102,7 @@ var stations_found = [];
 var piechart_info = [];
 var stations_found_hour_cont = [];
 var stations_found_hour_logstash = [];
+var stations_all_alert_table =[]
 var place_selected;
 var station_selected;
 var time;
@@ -147,54 +147,70 @@ router.route('/stations').get((req, res) => {
 });
 
 router.route('/all_stations/data').post((req, res) => {
+
     // Get all the stations in city of chicago
-        res.json(all_stations);
+    res.json(all_stations);
 });
 
 router.route('/all_stations').post((req, res) => {
-    // Get all the stations in city of chicago
+
+    // Get all the station's latitude and longitute for chicago
     date = new Date();
     console.log(req.body.time);
     var formatted_date = moment(date.setHours(date.getHours() - req.body.time)).format('YYYY-MM-DD HH:mm:ss');
-        // console.log(moment(date.setHours(date.getHours() - 1)).format('YYYY-MM-DD HH:mm:ss'));
+    // console.log(moment(date.setHours(date.getHours() - 1)).format('YYYY-MM-DD HH:mm:ss'));
     getall_station_latlang_chicago(formatted_date).then(function (response) {
         res.json(all_stations);
     });
 });
 
-// Get hour old data from server
-/*router.route('/stations/hourOldData').get((req, res) => {
+router.route('/all_stations/dock').post((req, res) => {
+
+    // Get all the stations in city of chicago using logstash for docks 90% full or empty
+    var str = JSON.stringify(req.body, null, 4);
+    date = new Date();
+    console.log("In dock");
+    console.log(place_selected);
+    var formatted_date = moment(date.getTime() - 5*60000).format('YYYY-MM-DD HH:mm:ss');
+    console.log(formatted_date);
+    /*
+        // Using postgre
+        const query = {
+            // Give the query a unique name
+            name: 'fetch-divvy-docks',
+            // This query fetches 3 divvy station nearby to the location we provide
+            text: ' SELECT * FROM divvy_stations_status ORDER BY (divvy_stations_status.where_is <-> ST_POINT($1,$2))',
+            values: [place_selected.latitude, place_selected.longitude]
+        }
+            // console.log(moment(date.setHours(date.getHours() - 1)).format('YYYY-MM-DD HH:mm:ss'));
+            find_stations_from_divvy_dock(query).then(function (response) {
+            res.json(stations_all_alert_table);
+        });
+    */
+    getall_station_dock_latlang_chicago(formatted_date).then(function (response) {
+        res.json(stations_all_alert_table);
+    });
    
-    res.json(stations_found_hourold)
-           
 });
 
-// Get continous hour old data from server
-router.route('/stations/hourContData').get((req, res) => {
-   
-    res.json(stations_found_hour_cont)
-           
-});
 
-// Get SMA data
-router.route('/stations/sma_data').get((req, res) => {
-   
-    res.json(stations_found_hour_sma)
-           
-});*/
+// Get logstash data from server
 
-// Get logstash  data from server
 router.route('/stations/logstash').get((req, res) => {
    
     res.json(stations_found_hour_logstash)
            
 });
 
+// Get data for piechart
+
 router.route('/stations/piechart').get((req, res) => {
    
     res.json(piechart_info)
            
 });
+
+// Find places from Yelp server
 
 router.route('/places/find').post((req, res) => {
 
@@ -216,7 +232,8 @@ router.route('/places/find/logstash').post((req, res) => {
     var str = JSON.stringify(req.body, null, 4);
 
     date = new Date();
-    var time = req.body.where;
+    time = req.body.where;
+    
     var formatted_date = moment(date.setHours(date.getHours() - time)).format('YYYY-MM-DD HH:mm:ss');
     console.log(moment(date.setHours(date.getHours() - time)).format('YYYY-MM-DD HH:mm:ss'));
 
@@ -240,7 +257,7 @@ router.route('/places/find/logstash').post((req, res) => {
 
 });
 
-
+// Fetch data to get divvy stations for selected place
 
 router.route('/stations/find').post((req, res) => {
 
@@ -306,58 +323,8 @@ router.route('/places/find/piechart').post((req, res) => {
 
 });
 
-// Added to get 1 hour/24 hour/7 days old divvy data
-/*router.route('/stations/hourold').post((req, res) => {
-
-    var str = JSON.stringify(req.body, null, 4);
-
-    for (var i = 0,len = stations_found.length; i < len; i++) {
-
-        if ( stations_found[i].stationName === req.body.placeName.stationName ) { // strict equality test
-
-            station_selected = stations_found[i];
-
-            break;
-        }
-    }
-    // Additional parameter to signify 1 hour/24 hours/7 days
-    let query_hour;
-    if('hour' == req.body.time) {
-        query_hour = {
-            // give the query a unique name
-            name: 'fetch-hourold-divvy',
-            // This query fetches an hour long data of the divvy bikes
-            text: ' select * from divvy_stations_logs d where d.lastcommunicationtime > now() - interval \'1 hour\' and d.latitude = $1 and d.longitude = $2 order by (d.lastcommunicationtime)',
-            values: [station_selected.latitude, station_selected.longitude]
-        }
-    } else if('day' == req.body.time) {
-        query_hour = {
-            // give the query a unique name
-            name: 'fetch-dayold-divvy',
-            // This query fetches an hour long data of the divvy bikes
-            text: ' select * from divvy_stations_logs d where d.lastcommunicationtime > now() - interval \'24 hour\' and d.latitude = $1 and d.longitude = $2 order by (d.lastcommunicationtime)',
-            values: [station_selected.latitude, station_selected.longitude]
-        }
-    } else {
-        query_hour = {
-            // give the query a unique name
-            name: 'fetch-weekold-divvy',
-            // This query fetches an hour long data of the divvy bikes
-            text: ' select * from divvy_stations_logs d where d.lastcommunicationtime > now() - interval \'7 days\' and d.latitude = $1 and d.longitude = $2 order by (d.lastcommunicationtime)',
-            values: [station_selected.latitude, station_selected.longitude]
-        }
-    } 
-
-
-    find_stations_from_divvy_hour_old(query_hour).then(function (response) {
-        var hits = response;
-        res.json({'stations_found': 'Added successfully'});
-    });
- 
-
-});*/
-
 // Async function to set data for every 3 min
+
 const intervalObj = setInterval(() => {
     console.log('interviewing the interval every 3 min');
     if(station_selected != null) {
@@ -368,48 +335,36 @@ const intervalObj = setInterval(() => {
             text: ' select * from divvy_stations_logs d where d.lastcommunicationtime > now() - interval \'1 hour\' and d.latitude = $1 and d.longitude = $2 order by (d.lastcommunicationtime)',
             values: [station_selected.latitude, station_selected.longitude]
         }*/
-        find_stations_from_divvy_hour_continous(station_selected.placeName, time)
+        // find_stations_from_divvy_hour_continous(station_selected.placeName, time)
         // io.sockets.emit('updatedStation', stations_found_hour_logstash);
+        date = new Date();
+        time = req.body.where;
+        console.log("In here");
+        var formatted_date = moment(date.setHours(date.getHours() - time)).format('YYYY-MM-DD HH:mm:ss');
+        console.log(moment(date.setHours(date.getHours() - time)).format('YYYY-MM-DD HH:mm:ss'));
+
+        // if(time == 1) {
+        //     find_stations_from_logstash(station_selected.placeName, time, formatted_date).then(function (response) {
+        //         var hits = response;
+        //         res.json(stations_found_hour_logstash);
+        //     });
+        // } else if(time == 24) {
+        //     find_stations_from_logstash_day(station_selected.placeName, time, formatted_date).then(function (response) {
+        //         var hits = response;
+        //         res.json(stations_found_hour_logstash);
+        //     });
+        // } else if(time == 168) {
+        //     find_stations_from_logstash_week(station_selected.placeName, time, formatted_date).then(function (response) {
+        //         var hits = response;
+        //         res.json(stations_found_hour_logstash);
+        //     });
+        // }
     }
   }, 180000);
 
   io.on('connection', function (socket) {
     console.log('a user connected');
   });
-  
-// Function to calculate data for SMA
-/*router.route('/stations/sma').post((req, res) => {
-    var str = JSON.stringify(req.body, null, 4);
-
-    for (var i = 0,len = stations_found.length; i < len; i++) {
-        if ( stations_found[i].stationName === req.body.placeName.stationName ) { // strict equality test
-            station_selected = stations_found[i];
-            break;
-        }
-    }
-    // Additional parameter to signify 1 hour/24 hours/7 days
-    let query_hour, query_day;
-        query_hour = {
-            // give the query a unique name
-            name: 'fetch-sma_hr-divvy',
-            // This query fetches an hour long data of the divvy bikes
-            text: ' select * from divvy_stations_logs d where d.lastcommunicationtime > now() - interval \'1 hour\' and d.latitude = $1 and d.longitude = $2 order by (d.lastcommunicationtime) LIMIT 30',
-            values: [station_selected.latitude, station_selected.longitude]
-        }
-
-        query_day = {
-            // give the query a unique name
-            name: 'fetch-sma_day-divvy',
-            // This query fetches a day long data of the divvy bikes
-            text: ' select * from divvy_stations_logs d where d.lastcommunicationtime > now() - interval \'24 hour\' and d.latitude = $1 and d.longitude = $2 order by (d.lastcommunicationtime) LIMIT 720',
-            values: [station_selected.latitude, station_selected.longitude]
-        }
-
-        find_stations_from_divvy_hour_sma(query_hour, query_day).then(function (response) {
-            var hits = response;
-            res.json({'sma_calculated': 'Added successfully'});
-        });
-});*/
 
 /////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////
@@ -419,28 +374,29 @@ const intervalObj = setInterval(() => {
 ////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////
 
+// To find stations from postgre
 
 async function find_stations_from_divvy(query) {
 
     const response = await pgClient.query(query);
 
     stations_found = [];
-// i<3 because we limited the no of divvy stations to 3
-    for (i = 0; i < 3; i++) {
+    // i<3 because we limited the no of divvy stations to 3
+    for (i = 0; i < response.rows.length; i++) {
                 
          plainTextDateTime =  moment(response.rows[i].lastcommunicationtime).format('YYYY-MM-DD, h:mm:ss a');
 
         var station = {
-                    "id": response.rows[i].id,
-                    "stationName": response.rows[i].stationname,
-                    "availableBikes": response.rows[i].availablebikes,
-                    "availableDocks": response.rows[i].availabledocks,
-                    "is_renting": response.rows[i].is_renting,
-                    "lastCommunicationTime": plainTextDateTime,
-                    "latitude": response.rows[i].latitude,    
-                    "longitude": response.rows[i].longitude,
-                    "status": response.rows[i].status,
-                    "totalDocks": response.rows[i].totaldocks
+            "id": response.rows[i].id,
+            "stationName": response.rows[i].stationname,
+            "availableBikes": response.rows[i].availablebikes,
+            "availableDocks": response.rows[i].availabledocks,
+            "is_renting": response.rows[i].is_renting,
+            "lastCommunicationTime": plainTextDateTime,
+            "latitude": response.rows[i].latitude,    
+            "longitude": response.rows[i].longitude,
+            "status": response.rows[i].status,
+            "totalDocks": response.rows[i].totaldocks
         };
 
         stations_found.push(station);
@@ -450,13 +406,13 @@ async function find_stations_from_divvy(query) {
 
 }
 
-// async function for hour old data
+// Fetching docks which are 90% full or empty from postgre
 
-/*async function find_stations_from_divvy_hour_old(query) {
+async function find_stations_from_divvy_dock(query) {
 
     const response = await pgClient.query(query);
 
-    stations_found_hourold = [];
+    stations_all_alert_table = [];
 // i<3 because we limited the no of divvy stations to 3
     for (i = 0; i < response.rows.length; i++) {
                 
@@ -474,12 +430,16 @@ async function find_stations_from_divvy(query) {
                     "status": response.rows[i].status,
                     "totalDocks": response.rows[i].totaldocks
         };
-
-        stations_found_hourold.push(station);
-
+        
+        var dock_per = (response.rows[i].availablebikes/response.rows[i].totaldocks)*100
+            
+        if ( dock_per >= 90 || dock_per <= 10) { // strict equality test
+            stations_all_alert_table.push(station);
+        }     
     }
 }
-*/
+
+
 // async function for contious updation of data
 
 async function find_stations_from_divvy_hour_continous(query) {
@@ -529,45 +489,6 @@ function sma(period) {
     }
 }
 
-// Async function to calculate SMA
-
-/*async function find_stations_from_divvy_hour_sma(query_hour, query_day) {
-
-    const response_hour = await pgClient.query(query_hour);
-    const response_day = await pgClient.query(query_day);
-
-    let sma_hour = [];
-    let sma_day = [];
-    sma_30_data = sma(30);
-    sma_720_data = sma(720);
-    // console.log(sma_30_data);
-    stations_found_hour_sma = []
-    for (i = 0; i < response_day.rows.length; i++) {
-        
-        plainTextDateTime =  moment(response_day.rows[i].lastcommunicationtime).format('YYYY-MM-DD, h:mm:ss a');
-        // Calculate SMA here
-        sma_30 = sma_30_data(response_day.rows[i].availabledocks)
-        sma_720 = sma_720_data(response_day.rows[i].availabledocks)
-        console.log(sma_30);
-        var station = {
-                    "id": response_day.rows[i].id,
-                    "stationName": response_day.rows[i].stationname,
-                    "availableBikes": response_day.rows[i].availablebikes,
-                    "availableDocks": response_day.rows[i].availabledocks,
-                    "is_renting": response_day.rows[i].is_renting,
-                    "lastCommunicationTime": plainTextDateTime,
-                    "latitude": response_day.rows[i].latitude,    
-                    "longitude": response_day.rows[i].longitude,
-                    "status": response_day.rows[i].status,
-                    "totalDocks": response_day.rows[i].totaldocks,
-                    "sma_30": sma_30,
-                    "sma_720": sma_720
-        };
-        
-        stations_found_hour_sma.push(station);
-
-    }
-}*/
 
 /////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////
@@ -577,7 +498,7 @@ function sma(period) {
 ////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////
 
-
+// Function to find places from Yelp in elastic search
 
 async function find_places_from_yelp(place, where, zipcode) {
 
@@ -701,7 +622,7 @@ async function find_stations_from_logstash(stationName, time, req_date) {
     this.time = time;
     if(time == 1) {
         // query_val = stationName.lastCommunicationTime.substr(0,14);
-        size="30";
+        size="40";
         // x_axis=[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60];
     }
     let body = 
@@ -736,8 +657,11 @@ async function find_stations_from_logstash(stationName, time, req_date) {
     sma_30_data = sma(30);
     sma_720_data = sma(720);
     count=0;
+    aSamp =["a"];
+    
     results.hits.hits.forEach((hit, index) => {
         count = count+1;
+        var b = moment(hit._source.lastCommunicationTime).format('hh:mm a');
         // console.log(moment(hit._source.lastCommunicationTime).format('hh:mm:ss a'))
         sma_30 = sma_30_data(hit._source.availableDocks);
         sma_720 = sma_720_data(hit._source.availableDocks);
@@ -747,7 +671,7 @@ async function find_stations_from_logstash(stationName, time, req_date) {
             "availableBikes": hit._source.availableBikes,
             "availableDocks": hit._source.availableDocks,
             "is_renting": hit._source.is_renting,
-            "x_axis": moment(hit._source.lastCommunicationTime).format('hh:mm a'),
+            "x_axis": b,
             "lastCommunicationTime": hit._source.lastCommunicationTime,
             "latitude": hit._source.latitude,    
             "longitude": hit._source.longitude,
@@ -756,8 +680,11 @@ async function find_stations_from_logstash(stationName, time, req_date) {
             "sma_30": sma_30,
             "sma_720": sma_720
         };
-            stations_found_hour_logstash.push(station);
 
+        if((! aSamp.includes(b))) {
+            aSamp.push(b)
+            stations_found_hour_logstash.push(station);
+        }
     });
 }
 
@@ -804,6 +731,8 @@ async function find_stations_from_logstash_day(stationName, time, req_date) {
     x_axis=0;
     sum=0;
     avg=0;
+    i=1;
+    aSamp =["a"];
     results.hits.hits.forEach((hit, index) => {
         
         count = count+1;
@@ -811,8 +740,35 @@ async function find_stations_from_logstash_day(stationName, time, req_date) {
         avg = sum/count;
         sma_30 = sma_30_data(hit._source.availableDocks);
         sma_720 = sma_720_data(hit._source.availableDocks);
-        if(count == 30)
+        var a = stations_found_hour_logstash
+        var b = moment(hit._source.lastCommunicationTime).startOf('hour').format('hh:mm a')
+        if(index == 0) {
+            x_axis = x_axis+1;
+            aSamp.push(b)
+            var station = {
+                "id": hit._source.id,
+                "stationName": hit._source.stationName,
+                "availableBikes": hit._source.availableBikes,
+                "availableDocks": avg,
+                "is_renting": hit._source.is_renting,
+                "x_axis": moment(hit._source.lastCommunicationTime).startOf('hour').format('hh:mm a'),
+                "lastCommunicationTime": moment(hit._source.lastCommunicationTime).format('hh:mm a'),
+                "latitude": hit._source.latitude,    
+                "longitude": hit._source.longitude,
+                "status": hit._source.status,
+                "totalDocks": hit._source.totalDocks,
+                "sma_30": sma_30,
+                "sma_720": sma_720
+            };
+            count = 0;
+            sum = 0;
+            avg = 0;
+            stations_found_hour_logstash.push(station);
+            
+        } else if(! aSamp.includes(b))
         {
+            i++;
+            aSamp.push(b)
             x_axis = x_axis+1;
             var station = {
                 "id": hit._source.id,
@@ -821,7 +777,7 @@ async function find_stations_from_logstash_day(stationName, time, req_date) {
                 "availableDocks": avg,
                 "is_renting": hit._source.is_renting,
                 "x_axis": moment(hit._source.lastCommunicationTime).startOf('hour').format('hh:mm a'),
-                "lastCommunicationTime": hit._source.lastCommunicationTime,
+                "lastCommunicationTime": moment(hit._source.lastCommunicationTime).format('hh:mm a'),
                 "latitude": hit._source.latitude,    
                 "longitude": hit._source.longitude,
                 "status": hit._source.status,
@@ -882,14 +838,43 @@ async function find_stations_from_logstash_week(stationName, time, req_date) {
     x_axis=0;
     sum=0;
     avg=0;
+    i=1;
+    aSamp =["a"];
     results.hits.hits.forEach((hit, index) => {
         count = count+1;
         sum = sum + hit._source.availableDocks;
         avg = sum/count;
         sma_30 = sma_30_data(hit._source.availableDocks);
         sma_720 = sma_720_data(hit._source.availableDocks);
-        if(count == 205)
+        var a = stations_found_hour_logstash
+        var b = moment(hit._source.lastCommunicationTime).format('YYYY-MM-DD')
+        if(index == 0) {
+            x_axis = x_axis+1;
+            aSamp.push(b)
+            var station = {
+                "id": hit._source.id,
+                "stationName": hit._source.stationName,
+                "availableBikes": hit._source.availableBikes,
+                "availableDocks": avg,
+                "is_renting": hit._source.is_renting,
+                "x_axis": b,
+                "lastCommunicationTime": hit._source.lastCommunicationTime,
+                "latitude": hit._source.latitude,    
+                "longitude": hit._source.longitude,
+                "status": hit._source.status,
+                "totalDocks": hit._source.totalDocks,
+                "sma_30": sma_30,
+                "sma_720": sma_720
+            };
+            count = 0;
+            sum = 0;
+            avg = 0;
+            stations_found_hour_logstash.push(station);
+            
+        } else if(! aSamp.includes(b))
         {
+            i++;
+            aSamp.push(b)
             x_axis = x_axis+1;
             var station = {
                 "id": hit._source.id,
@@ -897,7 +882,7 @@ async function find_stations_from_logstash_week(stationName, time, req_date) {
                 "availableBikes": hit._source.availableBikes,
                 "availableDocks": avg,
                 "is_renting": hit._source.is_renting,
-                "x_axis": moment(hit._source.lastCommunicationTime).format('YYYY-MM-DD'),
+                "x_axis": b,
                 "lastCommunicationTime": hit._source.lastCommunicationTime,
                 "latitude": hit._source.latitude,    
                 "longitude": hit._source.longitude,
@@ -916,6 +901,8 @@ async function find_stations_from_logstash_week(stationName, time, req_date) {
     });
 }
 
+// An async function to get latitude and longitude for all stations in chicago
+
 async function getall_station_latlang_chicago(req_date) {
 
     all_stations =[];
@@ -923,7 +910,6 @@ async function getall_station_latlang_chicago(req_date) {
 
     let body = 
     {
-        "size": "2000",
         "from": "0",
         "query": {
             "bool": {
@@ -969,7 +955,68 @@ async function getall_station_latlang_chicago(req_date) {
         });
 }
 
+// An async function to get docks which are 90% full or empty
+
+async function getall_station_dock_latlang_chicago(req_date) {
+    
+    stations_all_alert_table=[];
+    let body = 
+    {
+        "size": "1000",
+        "from": "0",
+        "query": {
+            "bool": {
+                "must": [
+                    {
+                        "term": {
+                            "city.keyword": "Chicago"
+                        }
+                    },
+                    {
+                        "range": {
+                            "lastCommunicationTime.keyword": {
+                                "gte": req_date
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "sort": {
+            "lastCommunicationTime.keyword": {
+                "order": "asc"
+            }
+        }
+    }
+    aSamp =["a"];
+    results = await esClient.search({index: 'divvy_stations_logs', body: body});
+
+    results.hits.hits.forEach((hit, index) => {
+
+        var station = {
+            "id": hit._source.id,
+            "stationName": hit._source.stationName,
+            "availableBikes": hit._source.availableBikes,
+            "availableDocks": hit._source.availableDocks,
+            "is_renting": hit._source.is_renting,
+            "lastCommunicationTime": hit._source.lastCommunicationTime,
+            "latitude": hit._source.latitude,    
+            "longitude": hit._source.longitude,
+            "status": hit._source.status,
+            "totalDocks": hit._source.totalDocks,
+        };
+        
+        var dock_per = (hit._source.availableBikes/hit._source.totalDocks)*100
+            
+        if ( dock_per >= 90 || dock_per <= 10) { // strict equality test
+            if((! aSamp.includes(station.stationName))) {
+                aSamp.push(station.stationName)
+                stations_all_alert_table.push(station);
+            }
+        }
+    });
+}
+
 app.use('/', router);
 
 app.listen(4000, () => console.log('Express server running on port 4000'));
-
