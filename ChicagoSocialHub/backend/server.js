@@ -910,6 +910,7 @@ async function getall_station_latlang_chicago(req_date) {
 
     let body = 
     {
+        "size": "3000",
         "from": "0",
         "query": {
             "bool": {

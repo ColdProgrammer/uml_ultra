@@ -3,7 +3,7 @@
 /// This file and the source code provided can be used only for
 /// the projects and assignments of this course
 
-/// Last Edit by Dr. Atef Bader: 1/30/2019
+/// Last Edit by Srajan: 05/05/2019
 
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -35,10 +35,6 @@ import { ListOfPlacesComponent } from './components/list-of-places/list-of-place
 import { ListOfStationsComponent } from './components/list-of-stations/list-of-stations.component';
 import { BarChartYelpComponent } from './components/bar-chart-yelp/bar-chart-yelp.component';
 import { StackBarChartDivvyComponent } from './components/stack-bar-chart-divvy/stack-bar-chart-divvy.component';
-import { LineChartDivvyComponent } from './components/line-chart-divvy/line-chart-divvy.component';
-import { LineChartDayDivvyComponent } from './components/line-chart-day-divvy/line-chart-day-divvy.component';
-import { LineChartWeekDivvyComponent } from './components/line-chart-week-divvy/line-chart-week-divvy.component';
-import { SmaLineChartDivvyComponent } from './components/sma-line-chart-divvy/sma-line-chart-divvy.component';
 import { DasboardDisplayComponent } from './components/dasboard-display/dasboard-display.component';
 import { PieChartDivvyComponent } from './components/pie-chart-divvy/pie-chart-divvy.component';
 import { HomepageComponent } from './components/homepage/homepage.component';
@@ -54,10 +50,6 @@ const routes: Routes = [
   { path: 'list_of_stations', component: ListOfStationsComponent},
   { path: 'bar-chart-yelp', component: BarChartYelpComponent},
   { path: 'stack-chart-divvy', component: StackBarChartDivvyComponent},
-  { path: 'line-chart-divvy', component: LineChartDivvyComponent},
-  { path: 'line-chart-day-divvy', component: LineChartDayDivvyComponent},
-  { path: 'line-chart-week-divvy', component: LineChartWeekDivvyComponent},
-  { path: 'sma-line-chart-divvy', component: SmaLineChartDivvyComponent},
   { path: 'dashboard', component: DasboardDisplayComponent},
   { path: 'pie-chart-divvy', component: PieChartDivvyComponent},
   { path: 'homepage', component: HomepageComponent},
@@ -75,10 +67,6 @@ const routes: Routes = [
     ListOfStationsComponent,
     BarChartYelpComponent,
     StackBarChartDivvyComponent,
-    LineChartDivvyComponent,
-    LineChartDayDivvyComponent,
-    LineChartWeekDivvyComponent,
-    SmaLineChartDivvyComponent,
     DasboardDisplayComponent,
     PieChartDivvyComponent,
     HomepageComponent,

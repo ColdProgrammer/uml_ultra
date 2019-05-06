@@ -30,7 +30,7 @@ export interface PlotData {
 
 export class StackBarChartDivvyComponent implements OnInit {
 
-  title = 'Stacked Bar Chart';
+  title = '  Stacked Bar Chart';
   stations: Station[];
   private margin: Margin;
   private width: number;
