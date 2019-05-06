@@ -11,5 +11,17 @@
   &nbsp; &nbsp; 
   <mat-icon>keyboard_return</mat-icon>    
 </button>
+&nbsp; &nbsp; &nbsp;
+<button mat-raised-button color="primary" (click)="findAllDocks()">
+  PieChart for all Docks
+  &nbsp; &nbsp; 
+  <mat-icon>pie_chart</mat-icon>    
+</button>
+&nbsp; &nbsp; &nbsp;
+<button mat-raised-button color="primary" (click)="fetchStations()">
+    PieChart for place selected
+    &nbsp; &nbsp; 
+    <mat-icon>pie_chart</mat-icon>    
+  </button>
 <h2>{{ title }}</h2>
 <svg width="960" height="500"></svg>

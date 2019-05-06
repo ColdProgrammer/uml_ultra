@@ -49,6 +49,18 @@ export class PieChartDivvyComponent implements OnInit {
       });
   }
 
+  // Function for piechart for all docks
+  findAllDocks() {
+    this.placesService
+      .findPieChartAll()
+      .subscribe((data: Station[]) => {
+        this.stations = data;
+        // console.log(data);
+        this.initSvg(this.stations);
+        this.drawPie(this.stations);
+      });
+  }
+
   // This function initializes the svg component
   private initSvg(data) {
     this.color = d3Scale.scaleOrdinal()

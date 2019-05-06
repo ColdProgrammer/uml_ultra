@@ -100,9 +100,11 @@ http.listen(port, () => {
 var places_found = [];
 var stations_found = [];
 var piechart_info = [];
+var piechart_info_all =[];
 var stations_found_hour_cont = [];
 var stations_found_hour_logstash = [];
-var stations_all_alert_table =[]
+var stations_all_alert_table =[];
+var stations_all_alert_piechart =[];
 var place_selected;
 var station_selected;
 var time;
@@ -308,17 +310,60 @@ router.route('/places/find/piechart').post((req, res) => {
     }
 
     var dock = {
-        "dock": ">=90% or <=10%",
+        "dock": ">=90% or <=10%"+ " (" + count_90.toString() + ")",
         "pie": count_90
     };
     piechart_info.push(dock);
     dock = {
-        "dock": "<90% or >10%",
+        "dock": "<90% or >10%"+ " (" + count_0.toString() + ")",
         "pie": count_0
     };
     piechart_info.push(dock);
 
     res.json(piechart_info);
+   
+
+});
+
+// Route for piechart all docks
+
+router.route('/places/find/piechart_all').post((req, res) => {
+
+    console.log("stations found" + stations_found);
+
+    var count_90=0;
+    var count_0=0;
+    piechart_info_all = [];
+    date = new Date();
+    console.log("In dock");
+    console.log(place_selected);
+    var formatted_date = moment(date.getTime() - 5*60000).format('YYYY-MM-DD HH:mm:ss');
+    console.log(formatted_date);
+    getall_station_dock_latlang_chicago(formatted_date).then(function (response) {
+        for (var i = 0,len = stations_all_alert_piechart.length; i < len; i++) {
+
+            var dock_per = (stations_all_alert_piechart[i].availableBikes/stations_all_alert_piechart[i].totalDocks)*100
+            if ( dock_per >= 90 || dock_per <= 10) {
+                // strict equality test
+                count_90++;
+            } else {
+                count_0++;
+            }       
+        }
+    
+        var dock = {
+            "dock": ">=90% or <=10%" + " (" + count_90.toString() + ")",
+            "pie": count_90
+        };
+        piechart_info_all.push(dock);
+        dock = {
+            "dock": "<90% or >10%" + " (" + count_0.toString() + ")",
+            "pie": count_0
+        };
+        piechart_info_all.push(dock);
+    
+        res.json(piechart_info_all);
+    });
    
 
 });
@@ -688,7 +733,7 @@ async function find_stations_from_logstash(stationName, time, req_date) {
     });
 }
 
-// A new async function to display realtimechart for 24/7 days
+// A new async function to display realtimechart for 24 hours
 
 async function find_stations_from_logstash_day(stationName, time, req_date) {
 
@@ -961,6 +1006,7 @@ async function getall_station_latlang_chicago(req_date) {
 async function getall_station_dock_latlang_chicago(req_date) {
     
     stations_all_alert_table=[];
+    stations_all_alert_piechart=[];
     let body = 
     {
         "size": "1000",
@@ -1009,11 +1055,12 @@ async function getall_station_dock_latlang_chicago(req_date) {
         
         var dock_per = (hit._source.availableBikes/hit._source.totalDocks)*100
             
-        if ( dock_per >= 90 || dock_per <= 10) { // strict equality test
-            if((! aSamp.includes(station.stationName))) {
-                aSamp.push(station.stationName)
+        if((! aSamp.includes(station.stationName))) { // strict equality test
+            aSamp.push(station.stationName);
+            if ( dock_per >= 90 || dock_per <= 10) {
                 stations_all_alert_table.push(station);
             }
+            stations_all_alert_piechart.push(station);
         }
     });
 }

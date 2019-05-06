@@ -145,6 +145,15 @@ export class PlacesService {
 
   }
 
+  findPieChartAll(){
+    const find_station_at = {
+      find: '',
+      where: ''
+    };
+
+    return this.http.post(`${this.uri}/places/find/piechart_all`, find_station_at, httpOptions);
+  }
+
 
   // The below function for hour old divvy status
   plotLineHour(placeName, time) {
