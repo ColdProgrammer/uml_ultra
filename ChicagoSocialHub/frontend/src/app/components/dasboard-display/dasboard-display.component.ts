@@ -70,6 +70,7 @@ export class DasboardDisplayComponent implements OnInit, OnDestroy {
         if (this.time == 1) {
           await this.delay(180000);
           if (this.time == 1) {
+            // console.log('here');
             this.placesService.findStationLogstash(this.place_selected, this.time).subscribe(() => {
               this.check_sma_30 = false;
               this.check_sma_720 = false;
@@ -104,7 +105,7 @@ export class DasboardDisplayComponent implements OnInit, OnDestroy {
 
   // This is a timeout function which executes for a given time
   delay(ms: number) {
-    // console.log('In delay');
+    console.log('In delay');
     return new Promise( resolve => setTimeout(resolve, ms) );
   }
 

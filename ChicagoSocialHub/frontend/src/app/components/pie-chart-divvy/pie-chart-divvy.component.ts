@@ -74,6 +74,8 @@ export class PieChartDivvyComponent implements OnInit {
     this.pie = d3Shape.pie()
         .sort(null)
         .value((d: any) => d.pie);
+    const iEl = d3.select('g');
+    iEl.remove();
     this.svg = d3.select('svg')
         .append('g')
         .attr('transform', 'translate(' + this.width / 2 + ',' + this.height / 2 + ')');
