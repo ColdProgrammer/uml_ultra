@@ -1,0 +1,57 @@
+<div>
+  <br>
+  <mat-card>
+    <mat-card-content>
+      <section>
+          <button mat-raised-button color="primary" routerLink="/homepage">
+            Home
+            &nbsp; &nbsp; &nbsp;
+            <mat-icon>home</mat-icon>
+          </button>
+          &nbsp; &nbsp; &nbsp;
+          <button mat-raised-button color="primary" routerLink="/stack-chart-divvy">
+            Stack Bar Chart
+            &nbsp; &nbsp; &nbsp;
+            <mat-icon>show_chart</mat-icon>
+          </button>
+          &nbsp; &nbsp; &nbsp;
+          <button mat-raised-button color="primary" (click)= "plotPieChart()" >
+            Pie Chart
+            &nbsp; &nbsp; &nbsp;
+            <mat-icon>pie_chart</mat-icon>
+          </button>
+          &nbsp; &nbsp; &nbsp;
+          <button mat-raised-button color="primary" (click)= "goToAlertTable()">
+            Alert Table
+            &nbsp; &nbsp; 
+            <mat-icon>notification_important</mat-icon>    
+          </button>
+          &nbsp; &nbsp; &nbsp;
+          <button mat-raised-button color="primary" routerLink="/list_of_stations">
+            Back
+            &nbsp; &nbsp; 
+            <mat-icon>keyboard_return</mat-icon>    
+          </button>
+      </section>
+      <br>
+      <section>
+        <mat-form-field>
+          <mat-label>Time Range</mat-label>
+          <mat-select [(value)]="selected">
+            <mat-option selected="selected" value="option1" (click)="plotLineHour(1)">Hourly Line Chart</mat-option>
+            <mat-option  value="option2" (click)="plotLineHour(24)">24 Hour Line Chart</mat-option>
+            <mat-option value="option3" (click)="plotLineHour(168)">7 days Line Chart</mat-option>
+          </mat-select>
+        </mat-form-field>
+        &nbsp; &nbsp; &nbsp;
+        <mat-checkbox class="example-margin" [(ngModel)]="check_sma_30" (click) = "plotSMA30()">SMA 30</mat-checkbox>
+        &nbsp;
+        <mat-checkbox class="example-margin" [(ngModel)]="check_sma_720" (click) = "plotSMA720()">SMA 720</mat-checkbox>
+      </section>
+    </mat-card-content>
+  </mat-card>
+</div>
+<div>
+  <h2>{{ title }}</h2>
+  <svg width="1200" height="500" id="line-chart"></svg>
+</div>

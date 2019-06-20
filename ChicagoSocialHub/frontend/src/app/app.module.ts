@@ -3,7 +3,7 @@
 /// This file and the source code provided can be used only for
 /// the projects and assignments of this course
 
-/// Last Edit by Dr. Atef Bader: 1/30/2019
+/// Last Edit by Srajan: 05/05/2019
 
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -21,8 +21,8 @@ import { FormsModule } from '@angular/forms';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { AgmCoreModule, GoogleMapsAPIWrapper } from '@agm/core';
 
-
-import { MatToolbarModule, MatFormFieldModule, MatInputModule, MatOptionModule, MatSelectModule, MatIconModule, MatButtonModule, MatCardModule, MatTableModule, MatDividerModule, MatSnackBarModule } from '@angular/material';
+import { MatToolbarModule, MatFormFieldModule, MatInputModule, MatOptionModule, MatSelectModule, MatIconModule,
+  MatButtonModule, MatCardModule, MatTableModule, MatDividerModule, MatSnackBarModule, MatCheckboxModule } from '@angular/material';
 
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -35,7 +35,11 @@ import { ListOfPlacesComponent } from './components/list-of-places/list-of-place
 import { ListOfStationsComponent } from './components/list-of-stations/list-of-stations.component';
 import { BarChartYelpComponent } from './components/bar-chart-yelp/bar-chart-yelp.component';
 import { StackBarChartDivvyComponent } from './components/stack-bar-chart-divvy/stack-bar-chart-divvy.component';
-import { LineChartDivvyComponent } from './components/line-chart-divvy/line-chart-divvy.component';
+import { DasboardDisplayComponent } from './components/dasboard-display/dasboard-display.component';
+import { PieChartDivvyComponent } from './components/pie-chart-divvy/pie-chart-divvy.component';
+import { HomepageComponent } from './components/homepage/homepage.component';
+import { HeatmapDivvyComponent } from './components/heatmap-divvy/heatmap-divvy.component';
+import { AlertTableComponent } from './components/alert-table/alert-table.component';
 
 
 
@@ -46,9 +50,13 @@ const routes: Routes = [
   { path: 'list_of_stations', component: ListOfStationsComponent},
   { path: 'bar-chart-yelp', component: BarChartYelpComponent},
   { path: 'stack-chart-divvy', component: StackBarChartDivvyComponent},
-  { path: 'line-chart-divvy', component: LineChartDivvyComponent},
+  { path: 'dashboard', component: DasboardDisplayComponent},
+  { path: 'pie-chart-divvy', component: PieChartDivvyComponent},
+  { path: 'homepage', component: HomepageComponent},
+  { path: 'heatmap-divvy', component: HeatmapDivvyComponent},
+  { path: 'alert-table', component: AlertTableComponent},
 
-  { path: '', redirectTo: 'find', pathMatch: 'full'}
+  { path: '', redirectTo: 'homepage', pathMatch: 'full'}
 ];
 
 @NgModule({
@@ -59,7 +67,11 @@ const routes: Routes = [
     ListOfStationsComponent,
     BarChartYelpComponent,
     StackBarChartDivvyComponent,
-    LineChartDivvyComponent,
+    DasboardDisplayComponent,
+    PieChartDivvyComponent,
+    HomepageComponent,
+    HeatmapDivvyComponent,
+    AlertTableComponent,
   ],
   imports: [
     BrowserModule,
@@ -78,8 +90,9 @@ const routes: Routes = [
     MatTableModule,
     MatDividerModule,
     MatSnackBarModule,
+    MatCheckboxModule,
 
-/////////////////////////////////////////////////////////////////////////////////////    
+/////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////// SETUP NEEDED ////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////
 
@@ -93,7 +106,7 @@ const routes: Routes = [
 /////////////////////////////////////////////////////////////////////////////////////
 
 
-    AgmCoreModule.forRoot({apiKey: 'AIzaSyB-M3eYX7THgY3KeZ0SaeBdd1g9hv9b-lw'}),
+    AgmCoreModule.forRoot({apiKey: 'AIzaSyB-M3eYX7THgY3KeZ0SaeBdd1g9hv9b-lw' + '&libraries=visualization'}),
     FormsModule,
     NgbModule
   ],
